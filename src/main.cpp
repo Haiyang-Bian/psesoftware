@@ -13,9 +13,9 @@
 #include "../include/Controler.h"
 #include "../include/DndControler.h"
 #include <iostream>
-#include <jluna.hpp>
+//#include <jluna.hpp>
 
-using namespace jluna;
+//using namespace jluna;
 
 int main(int argc, char *argv[])
 {

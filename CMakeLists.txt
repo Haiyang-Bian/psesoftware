@@ -33,7 +33,6 @@ file(GLOB JULIA_LIBS ./release/julia-1.10.2-win64/julia-1.10.2/lib/*.a)
 # 然后链接到你的应用程序或库
 target_link_libraries(gAPHD PRIVATE 
 	${JULIA_LIBS}
-	${MYLIB}
 	${OTHERLIB_LIBRARY}
 )
 
