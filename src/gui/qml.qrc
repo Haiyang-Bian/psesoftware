@@ -1,0 +1,74 @@
+<RCC>
+    <qresource prefix="/variable">
+        <file>Variables/VarEdit.qml</file>
+        <file>Variables/VarInput.qml</file>
+        <file>Variables/Vars.qml</file>
+    </qresource>
+    <qresource prefix="/connection">
+        <file>Connection/ConnEdit.qml</file>
+        <file>Connection/ConnInput.qml</file>
+        <file>Connection/Conns.qml</file>
+        <file>Connection/ConnVarInput.qml</file>
+        <file>Connection/ConnVarRow.qml</file>
+    </qresource>
+    <qresource prefix="/model">
+        <file>Model/DndTreeView.qml</file>
+        <file>Model/IconAndConn.qml</file>
+        <file>Model/MaterialEditor.qml</file>
+        <file>Model/Model.qml</file>
+        <file>Model/ModelConnEdit.qml</file>
+        <file>Model/ModelInput.qml</file>
+        <file>Model/ModelList.qml</file>
+        <file>Model/ModelMaterials.qml</file>
+        <file>Model/ModelParaInput.qml</file>
+        <file>Model/ModelSubSystem.qml</file>
+        <file>Model/ModelVarPara.qml</file>
+        <file>Model/TextEditor.qml</file>
+    </qresource>
+    <qresource prefix="/mainmenu">
+        <file>MainMenu/FileTree.qml</file>
+        <file>MainMenu/IconToolsBar.qml</file>
+        <file>MainMenu/Menus.qml</file>
+        <file>MainMenu/MyMessage.qml</file>
+        <file>MainMenu/ProjectCreate.qml</file>
+        <file>MainMenu/TopToolsBar.qml</file>
+    </qresource>
+    <qresource prefix="/dndkit">
+        <file>DndComp/DragComponent.qml</file>
+        <file>DndComp/DropComponent.qml</file>
+        <file>DndComp/Handle.qml</file>
+        <file>DndComp/Node.qml</file>
+        <file>DndComp/Resizer.qml</file>
+    </qresource>
+    <qresource prefix="/system">
+        <file>System/InitAndSet.qml</file>
+        <file>System/LibBrowser.qml</file>
+        <file>System/ProcessList.qml</file>
+        <file>System/System.qml</file>
+        <file>System/SystemInput.qml</file>
+    </qresource>
+    <qresource prefix="/icons">
+        <file>Icons/CarbonAccumulationRain.svg</file>
+        <file>Icons/CarbonChartLineSmooth.svg</file>
+        <file>Icons/CarbonConnect.svg</file>
+        <file>Icons/CarbonModelAlt.svg</file>
+        <file>Icons/CarbonModelBuilder.svg</file>
+        <file>Icons/CarbonSettings.svg</file>
+        <file>Icons/CarbonValueVariable.svg</file>
+        <file>Icons/CodiconBrowser.svg</file>
+        <file>Icons/CodiconChevronRight.svg</file>
+        <file>Icons/CodiconChromeClose.svg</file>
+        <file>Icons/CodiconDebugAlt.svg</file>
+        <file>Icons/CodiconDiffAdded.svg</file>
+        <file>Icons/CodiconFolder.svg</file>
+        <file>Icons/CodiconRefresh.svg</file>
+        <file>Icons/CodiconSave.svg</file>
+        <file>Icons/CodiconSymbolConstant.svg</file>
+        <file>Icons/CodiconSymbolParameter.svg</file>
+        <file>Icons/CodiconSymbolStructure.svg</file>
+        <file>Icons/CodiconSymbolVariable.svg</file>
+    </qresource>
+    <qresource prefix="/mainWindow">
+        <file>main.qml</file>
+    </qresource>
+</RCC>
