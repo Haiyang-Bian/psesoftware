@@ -10,30 +10,29 @@ if (Qt6_VERSION VERSION_GREATER_EQUAL 6.3)
     qt_standard_project_setup()
 endif()
 
-file(GLOB_RECURSE SOURCES src/*.cpp ./include/*.h)
+file(GLOB_RECURSE SOURCES src/*.cpp include/*.h)
 
 qt_add_resources(RESOURCES src/gui/qml.qrc)
 
 qt_add_executable(gAPHD 
 	${RESOURCES}
-
 	${SOURCES}
 )
 
-find_library(OTHERLIB_LIBRARY NAMES jluna PATHS ./thirdparty/jluna/build/Debug)
-
-# 现在，你可以将otherlib的头文件目录添加到你的项目中
-target_include_directories(gAPHD PRIVATE 
-	./thirdparty/jluna
-	./release/julia-1.10.2-win64/julia-1.10.2/include/julia
+find_library(jluna REQUIRED 
+    NAMES jluna
+    PATHS templibinstall/jluna/lib
 )
 
-file(GLOB JULIA_LIBS ./release/julia-1.10.2-win64/julia-1.10.2/lib/*.a)
+file(GLOB JULIA_LIBS ./release/julia-1.10.2/lib/*.a)
 
-# 然后链接到你的应用程序或库
+target_include_directories(gAPHD PRIVATE 
+	release/julia-1.10.2/include/julia
+	templibinstall/jluna/include/jluna
+)
 target_link_libraries(gAPHD PRIVATE 
-	${JULIA_LIBS}
-	${OTHERLIB_LIBRARY}
+    ${jluna} 
+    ${JULIA_LIBS}
 )
 
 target_link_libraries(gAPHD PRIVATE
