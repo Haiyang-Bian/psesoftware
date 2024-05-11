@@ -27,7 +27,7 @@ end
         """DELETE FROM "PhysicalData"."PhysicalData" WHERE "Name" = '$(paras["name"])';"""
     )
     if LibPQ.error_message(result) == ""
-        @info "已删除$paras[name]物理量"
+        @info "已删除$(paras["name"])物理量"
     else
         @warn "删除失败!"
     end

@@ -258,19 +258,6 @@ function range_exprs(v::Vector)
     nothing
 end
 
-# 接口变量
-function create_data(_model::Connector)
-    model = _model.model
-    vars = ""
-    !haskey(model, "Variables") && error("错误!接口至少得有一个变量!请检查!")
-    for (k, v) in model["Variables"]
-        data = set_data(v)
-        # 接口不得有数组!
-        vars *= k * "(t)=$(data["Value"]),$(parse_metadata(data))\n"
-    end
-    return vars
-end
-
 # 对参数数组的预处理
 function parameter_preprocess(v::Vector)
     isempty(v) && return "", "", ""

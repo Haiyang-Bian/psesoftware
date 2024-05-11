@@ -13,21 +13,23 @@
 #include "../include/Controler.h"
 #include "../include/DndControler.h"
 #include <iostream>
-#include <jluna.hpp>
+//#include <jluna.hpp>
 
-using namespace jluna;
+//using namespace jluna;
 
 int main(int argc, char *argv[])
 {
 #if defined(Q_OS_WIN)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
-    jluna::initialize(4, false);
+    //jluna::initialize(1, false);
     QApplication app(argc, argv);
     //app.setWindowIcon(QIcon("./logo.png"));
     //Main.safe_eval_file("D:/Work/leetcode/QtModelBuilder/JuliaCore/Environment.jl");
     //Main.safe_eval(R"(cd("./WorkPath"))");
     
+    
+
     QQmlApplicationEngine engine;
 
     Controler controler;

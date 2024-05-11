@@ -232,7 +232,7 @@ function generate_material(m::Media{true})
     #rm("$(m.name).jl")
 end
 
-parse_media(::nothing) = Dict()
+parse_media(::Nothing) = Dict()
 
 function parse_media(m::Dict)
     isempty(m) && return nothing
