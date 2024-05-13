@@ -38,6 +38,7 @@ Window {
         text: "确定"
         onClicked: {
             tree.createItem(t1.text)
+            Controler.creatProject(t1.text)
             w.close()
         }
     }

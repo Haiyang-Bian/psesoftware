@@ -84,13 +84,9 @@ Rectangle {
                 width: 50
                 height: 50
                 onClicked: {
-                    typeList.appendType({
-                        "Type": "NewConnect" + connList.count,
+                    typeList.editType({
+                        "Type": "NewConnect" + typeList.rowCount(),
                         "Description": "新的接口类型"
-                    })
-                    connections.append({
-                        "Type": "NewConnect" + connList.count,
-                        "Variables": []
                     })
                 }
             }
@@ -108,10 +104,9 @@ Rectangle {
             spacing: 5
             clip: true
 
-            property var port: undefined
-            property var connId: 0
+            property string type: ""
 
-            model: connections
+            model: typeList
 
             delegate: mainList
         }
@@ -140,10 +135,6 @@ Rectangle {
         }
     }
 //以下为功能区(不显示)------------------------------------------------------------------------------
-
-    ListModel {
-        id: connections
-    }
 
     Component {
         id: mainList
@@ -175,8 +166,7 @@ Rectangle {
 
                     onDoubleTapped: (eventPoint, button) => {
                         if (button === Qt.LeftButton) {
-                            connList.port = Variables
-                            connList.connId = index
+                            connList.type = Type
                             connLoader.source = "/connection/Connection/ConnEdit.qml"
                             connLoader.active = true
                         }
@@ -193,17 +183,13 @@ Rectangle {
                             text: modelData
                             
                             onTriggered: {
-                                menuEvents(index, pIndex)
+                                menuEvents(index, Type)
                             }
                         }
                     }
                 }
             }
         }
-    }
-
-    Component.onCompleted: {
-        loadTypes()
     }
 
     Loader {
@@ -214,24 +200,8 @@ Rectangle {
 
         onLoaded: {
             item.createConn.connect(name => {
-                connections.append({
-                    "Type": name,
-                    "Variables": []
-                })
                 inputLoader.source = ""
                 inputLoader.active = false
-            })
-        }
-    }
-
-    function loadTypes(){
-        var arr = typeList.getTypes()
-        if (arr.length !== 0) {
-            arr.forEach(obj => {
-                connections.append({
-                    "Type": obj.Type,
-                    "Variables": obj.Variables
-                })
             })
         }
     }
@@ -250,8 +220,7 @@ Rectangle {
     function menuEvents(type, item){
         switch(type){
         case 0:
-            connWindow.typeList.removeType(item)
-            connections.remove(item)
+            connWindow.typeList.editType({"Type": item})
             break;
         }
     }

@@ -49,6 +49,9 @@ public slots:
     Q_INVOKABLE void editVariable(QJsonObject Obj, int index) const;
     Q_INVOKABLE void appendVar(QJsonObject Obj);
     Q_INVOKABLE QString getVariable(int index, int role);
+    void rename(QString name, int index) {
+        metaDataList[index].name = name;
+    }
 
 public:
     //以下是数据源

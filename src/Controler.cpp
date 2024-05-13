@@ -71,8 +71,9 @@ void Controler::saveOneProject(QString path, QString pname)
         systems.insert(it.key(), it->systemData());
     }
     project.insert("Systems", systems);
-
     QByteArray doc = QJsonDocument(project).toJson();
+
+    out << doc;
     file.close();
 }
 

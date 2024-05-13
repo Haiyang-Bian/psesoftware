@@ -50,17 +50,14 @@ Rectangle {
                 width: 50
                 height: 50
                 onClicked: {
-                    connWindow.typeList.createConnectionVar({
-                        "Name":  nameInput.text,
+                    let data = {
+                        "Name":  "NewVar" + varList.count,
                         "Type": "NoUnit",
-                        "Connect": "Equal",
-                        "Description": descriptionInput.text
-                    }, connList.connId)
-                    connList.port.append({
-                        "Name": name,
-                        "Type": "NoUnit",
-                        "Description": des
-                    })
+                        "ConnectType": "Equal",
+                        "Description": "新的变量"
+                    }
+                    connWindow.typeList.editPortVar(connList.type, data)
+                    varList.append(data)
                 }
             }
         }
@@ -77,13 +74,40 @@ Rectangle {
 
         clip: true
 
-        model: connList.port
+        model: varList
 
         delegate: ConnVarRow {
-            width: editWindow.width
-            varIndex: index
+
+            onRename: name => {
+                connWindow.typeList.renameVar(connList.type, Name, name)
+                Name = name
+            }
+
+            onEdit: (type, data) => {
+                console.log("youbingba")
+                let r = {}
+                switch(type){
+                case 0:
+                    r = { "Name": Name }
+                    varList.remove(index)
+                    break
+                case 1:
+                    Type = data
+                    r = { "Name": Name, "Type": data }
+                    break
+                case 2: 
+                    ConnectType = data
+                    r = { "Name": Name, "ConnectType": data }
+                    break
+                }
+                connWindow.typeList.editPortVar(connList.type, r)
+            }
         }
     }
 
 //功能区----------------------------------------------------------------------------------
+
+    ListModel {
+        id: varList
+    }
 }

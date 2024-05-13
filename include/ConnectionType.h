@@ -3,7 +3,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QNetworkAccessManager>
-#include "Variable.h"
 
 class Port
 {
@@ -16,6 +15,20 @@ public:
             vars.insert(var.value("Name").toString(), var);
         }
     }
+
+    
+    QJsonObject getPort() {
+        QJsonObject vars;
+        QMap<QString, QJsonObject>::iterator it;
+        for (it = this->vars.begin(); it != this->vars.end(); ++it) {
+            vars.insert(it.key(), it.value());
+        }
+        return QJsonObject{
+            {"Variables", vars},
+            {"Description", des}
+        };
+    }
+
 public:
     QMap<QString, QJsonObject> vars;
     QString des;
@@ -26,8 +39,7 @@ class ConnectionType : public QAbstractListModel
     Q_OBJECT
 public:
     enum Role {
-        IdRole = Qt::UserRole + 1,
-        TypeRole,
+        TypeRole = Qt::UserRole + 1,
         DescriptionRole
     };
 
@@ -44,22 +56,80 @@ protected:
     QHash<int, QByteArray> roleNames() const override;
 
 public slots:
-    //对数据的基本操作
-    Q_INVOKABLE void setConnectionType(); //初始化数据
-    Q_INVOKABLE void appendType(const QJsonObject& obj); //添加数据
-    Q_INVOKABLE void removeType(int index); //移除数据
-    Q_INVOKABLE void editType(const QJsonObject Obj, int c_index, int index);
+    
+    Q_INVOKABLE inline void removeType(QString name) {
+        typeList.removeAt(typeList.indexOf(name));
+        portList.remove(name);
+    }
+    Q_INVOKABLE void editType(QJsonObject obj) {
+        QString name = obj.value("Type").toString();
+        if (portList.contains(name))
+        {
+            if (obj.keys().size() == 1) {
+                int n = typeList.indexOf(name);
+                beginRemoveRows(QModelIndex(), n, n);
+                portList.remove(name);
+                typeList.removeAt(typeList.indexOf(name));
+                endRemoveRows();
+            }
+        }
+        else
+        {
+            beginInsertRows(QModelIndex(), 0, 0);
+            typeList.prepend(name);
+            portList.insert(name, obj);
+            endInsertRows();
+        }
+    }
     Q_INVOKABLE QJsonArray getTypes();
+    Q_INVOKABLE inline void rename(QString name, QString newName) {
+        portList.insert(newName, portList.value(name));
+        portList.remove(name);
+        int i = typeList.indexOf(name);
+        typeList[i] = newName;
+    }
+    Q_INVOKABLE inline void renameVar(QString conn, QString name, QString newName) {
+        Port& p = portList[conn];
+        p.vars.insert(newName, p.vars.value(name));
+        p.vars.remove(name);
+    }
     void loadTypes(const QJsonArray& ports) {
         for (auto p : ports) {
             QJsonObject port = p.toObject();
-            this->appendType(port);
+            this->editType(port);
         }
     }
-    // 此函数用于插入端口的变量(一条一条插入)
-    Q_INVOKABLE void createConnectionVar(const QJsonObject& Var, int index);
-    Q_INVOKABLE void removeConnectionVar(int c_index, int index);
-    Q_INVOKABLE QString getVarType(int c_index, int index, int role);
+    Q_INVOKABLE void editPortVar(QString conn, QJsonObject data) {
+        qDebug() << data;
+        qDebug() << data.contains("Type");
+        QString name = data.value("Name").toString();
+        Port& p = portList[conn];
+        qDebug() << p.vars.contains(name);
+        qDebug() << data.keys().size();
+        if (p.vars.contains(name)) {
+            if (data.keys().size() == 1) {
+                p.vars.remove(name);
+            }
+            else
+            {
+                if (data.contains("Type")) {
+                    p.vars[name].insert("Type", data["Type"]);
+                    qDebug() << p.vars[name];
+                }
+                else if(data.contains("ConnectType"))
+                {
+                    p.vars[name].insert("ConnectType", data["ConnectType"]);
+                }
+            }
+        }
+        else
+        {
+            p.vars.insert(name, data);
+        }
+    }
+    Q_INVOKABLE inline QString getVarType(QString conn, QString name) {
+        return portList.value(conn).vars.value(name).value("Type").toString();
+    }
     Q_INVOKABLE QList<QString> getTypeList();
     // 数据库交互函数
     Q_INVOKABLE void insertDB();
@@ -69,12 +139,9 @@ signals:
     void updateList();
 private:
     QNetworkAccessManager manager;
-    //以下是数据源
-    QList<int> idList;
-    QList<QString> typeList;
-    QList<Variable> variableList;
-    QList<QString> descriptionList;
-    //QMap<QString, Port> portList;
+
+    QStringList typeList;
+    QMap<QString, Port> portList;
 
     static QJsonArray standardTypes;
 };

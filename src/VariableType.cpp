@@ -114,7 +114,7 @@ QString VariableType::getType(int index, int role) {
 
 int VariableType::getIdByType(QString type) {
     QList<QJsonObject>::iterator it = varTypes.begin();
-    QList<QJsonObject>::iterator rit = varTypes.end();
+    QList<QJsonObject>::iterator rit = varTypes.end() - 1;
     while (it < rit)
     {
         if (it->value("Name") == type)

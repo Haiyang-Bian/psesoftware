@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     Controler controler;
-    controler.creatProject("Project_1");
+    //controler.creatProject("Project_1");
     engine.rootContext()->setContextProperty("Controler", &controler);
     controler.connectDataBase();
 

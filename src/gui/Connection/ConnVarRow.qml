@@ -4,34 +4,39 @@ import QtQuick.Layouts
 
 Rectangle {
     id: editDelegate
+    width: parent.width
     height: 50
-    property var varIndex: 0
-    property bool vselected: false
-    
     anchors.margins: 2
+
+    signal rename(string name)
+    signal edit(int type, var data)
 
     RowLayout {
         anchors.fill: parent
         spacing: 0
 
         Rectangle {
-            Layout.preferredWidth: editDelegate.width / 3
+            Layout.preferredWidth: (editDelegate.width -50) / 3
             Layout.preferredHeight: 50
-            color: vselected ? "blue" : "white"
             border {
                 color: "black"
                 width: 2
             }
-            Text {
-                anchors.centerIn: parent
-                text: Name
+            TextField {
+                anchors.fill: parent
+                horizontalAlignment: Text.AlignHCenter 
+
+                Component.onCompleted: text = Name
+
+                onAccepted: {
+                    rename(text)
+                }
             }
         }
 
         Rectangle {
-            Layout.preferredWidth: editDelegate.width / 3
+            Layout.preferredWidth: (editDelegate.width -50) / 3
             Layout.preferredHeight: 50
-            color: vselected ? "blue" : "white"
             border {
                 color: "black"
                 width: 2
@@ -42,15 +47,17 @@ Rectangle {
                 valueRole: "name"
                 anchors.margins: 2
                 anchors.fill: parent
-                currentIndex: getVarIndex(varIndex)
 
                 model: editWindow.varTypes
+
+                Component.onCompleted: {
+                    currentIndex = getVarIndex(Type)
+                }
                 
                 onActivated: {
                     if (currentValue !== undefined) {
-                        connWindow.typeList.editType({
-                            "Type": currentValue
-                        }, connList.connId, varIndex)
+                        console.log("为啥呀")
+                        edit(1, currentValue)
                     }
                 }
 
@@ -67,9 +74,8 @@ Rectangle {
         }
 
         Rectangle {
-            Layout.preferredWidth: editDelegate.width / 3
+            Layout.preferredWidth: (editDelegate.width -50) / 3
             Layout.preferredHeight: 50
-            color: vselected ? "blue" : "white"
             border {
                 color: "black"
                 width: 2
@@ -78,19 +84,21 @@ Rectangle {
             ComboBox {
                 anchors.fill: parent
                 anchors.margins: 2
-                currentIndex: getConnTypeIndex(varIndex)
-
+                
                 model: ListModel {
                     ListElement{ type:"Equal" }
                     ListElement{ type:"Flow" }
                     ListElement{ type:"Stream" }
                 }
+
+                Component.onCompleted: {
+                    currentIndex = getConnTypeIndex(ConnectType)
+                }
                 
                 onActivated: {
+                    
                     if (currentValue !== undefined) {
-                        connWindow.typeList.editType({
-                            "Connect": currentValue
-                        }, connList.connId, varIndex)
+                        edit(2, currentValue)
                     }
                 }
 
@@ -105,29 +113,18 @@ Rectangle {
                 }
             }
         }
-    }
 
-    TapHandler {
-        acceptedButtons: Qt.RightButton
-        onSingleTapped: eventPoint => {
-            contextMenu.popup(eventPoint.position)
-        }
-    }
-
-    Menu {
-        id: contextMenu
-        MenuItem {
-            text: "删除";
-            onTriggered: {
-                connList.port.remove(varIndex)
-                connWindow.typeList.removeConnectionVar(connList.connId, varIndex)
+        Button {
+            icon.source: "qrc:/icons/Icons/CodiconChromeClose.svg"
+            width: 50
+            height: 50
+            onClicked: {
+                edit(0, 0)
             }
         }
     }
 
-    // 依据变量序号查询变量类型进而查询其在变量类型表中的位置
-    function getVarIndex(vindex) {
-        var type = connWindow.typeList.getVarType(connList.connId, vindex, 3)
+    function getVarIndex(type) {
         var id = editWindow.varTypes.getIdByType(type)
         if (id === -1) {
             return 0
@@ -137,9 +134,7 @@ Rectangle {
         }
     }
 
-    // 依据变量序号查询连接类型
-    function getConnTypeIndex(vindex) {
-        let type = connWindow.typeList.getVarType(connList.connId, vindex, 8)
+    function getConnTypeIndex(type) {
         switch (type) {
         case "Equal":
             return 0;
