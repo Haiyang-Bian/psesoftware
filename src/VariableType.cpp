@@ -1,8 +1,6 @@
 #include "../include/VariableType.h"
 #include <QDebug>
 #include <qurl.h>
-#include <qsqlquery.h>
-#include <qsqlerror.h>
 #include <QFile>
 #include <QJsonDocument>
 #include <iostream>
@@ -104,7 +102,7 @@ QString VariableType::getType(int index, int role) {
     case 1:
         return type.value("Unit").toString();
     case 2:
-        return type.value("DefaultValue").toString();
+        return QString("%1").arg(type.value("DefaultValue").toDouble());
     case 3:
         return type.value("Min").toString();
     case 4:
@@ -120,9 +118,9 @@ int VariableType::getIdByType(QString type) {
     while (it < rit)
     {
         if (it->value("Name") == type)
-            return m_idList.at(it - varTypes.begin());
+            return it - varTypes.begin();
         if (rit->value("Name") == type)
-            return m_idList.at(rit - varTypes.begin());
+            return rit - varTypes.begin();
         it++;
         rit--;
     }
@@ -138,34 +136,32 @@ QJsonArray VariableType::saveTypes() {
     return ans;
 }
 
-void VariableType::loadTypesFromDataBase(QVariant dataBase) {
+void VariableType::loadTypesFromDataBase() {
     if (standarType.isEmpty()){
         QNetworkRequest request(QUrl("http://localhost:8080/physicalDatas"));
         QNetworkReply* reply = manager.get(request);
-        if (reply->error()) {
-            qDebug() << "Error:" << reply->errorString();
-            return;
-        }
-        QJsonArray arr = QJsonDocument::fromJson(reply->readAll()).array();
-        for (auto v : arr) {
-            QJsonObject query = v.toObject();
-            // 其他字段类似...
-            beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount()); 
-            // 第一个参数表示在顶级根(由于是列表结构所以表示当前列表的根）
-            // 第二个参数表示起始位
-            // 第三个参数表示结束位置，由于只有一列，所以两者都一样
-            varTypes.append(query);
-            endInsertRows();    //插入数据需遵循的规则，表示结束
-            
-            standarType.append(query);
-        }
+        connect(&manager, &QNetworkAccessManager::finished, this, [this, reply](){
+            if (reply->error()) {
+                qDebug() << "Error:" << reply->errorString();
+                return;
+            }
+            QJsonObject res = QJsonDocument::fromJson(reply->readAll()).object();
+            QJsonArray arr = res.value("Types").toArray();
+            beginInsertRows(QModelIndex(), 0, arr.size() - 1);
+            for (auto v : arr) {
+                QJsonObject query = v.toObject();
+                varTypes.append(query);
+                standarType.append(query);
+            }
+            endInsertRows();
+            reply->deleteLater();
+        });
     }
     else {
+        beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount() + standarType.size() - 1);
         for (QJsonObject d : standarType) {
-            beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount());
-            m_idList.append(this->rowCount());
             varTypes.append(d);
-            endInsertRows(); 
         }
+        endInsertRows();
     }
 }

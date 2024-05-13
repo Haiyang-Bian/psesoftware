@@ -2,14 +2,31 @@
 #include <QAbstractListModel>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QNetworkAccessManager>
 #include "Variable.h"
+
+class Port
+{
+public:
+    Port(){}
+    Port(QJsonObject& p) {
+        des = p.value("Description").toString();
+        for (auto v : p.value("Variables").toArray()) {
+            QJsonObject var = v.toObject();
+            vars.insert(var.value("Name").toString(), var);
+        }
+    }
+public:
+    QMap<QString, QJsonObject> vars;
+    QString des;
+};
 
 class ConnectionType : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    enum Role { //定义数据的角色
-        IdRole = Qt::UserRole + 1, //UserRole表示合法位置的起始位置
+    enum Role {
+        IdRole = Qt::UserRole + 1,
         TypeRole,
         DescriptionRole
     };
@@ -45,15 +62,19 @@ public slots:
     Q_INVOKABLE QString getVarType(int c_index, int index, int role);
     Q_INVOKABLE QList<QString> getTypeList();
     // 数据库交互函数
-    Q_INVOKABLE void insertDB(QVariant dataBase, QString name);
-    Q_INVOKABLE void loadConnsFromDB(QVariant dataBase, QVariantList libs);
+    Q_INVOKABLE void insertDB();
+    Q_INVOKABLE void loadConnsFromDB();
 
 signals:
     void updateList();
 private:
+    QNetworkAccessManager manager;
     //以下是数据源
     QList<int> idList;
     QList<QString> typeList;
     QList<Variable> variableList;
     QList<QString> descriptionList;
+    //QMap<QString, Port> portList;
+
+    static QJsonArray standardTypes;
 };

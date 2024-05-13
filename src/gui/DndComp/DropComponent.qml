@@ -10,7 +10,7 @@ DropArea {
 
     property bool isSubSystem: false
     property int space: 20
-    property DndControler dndControler: undefined
+    property var dndControler: undefined
 
     Connections {
         target: dndControler

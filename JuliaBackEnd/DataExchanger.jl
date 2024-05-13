@@ -31,7 +31,7 @@ set_connection("localhost", 8888)
 function get_datatype(name::String)
     result = execute(connection, """SELECT * FROM "PhysicalData"."PhysicalData" WHERE "Name" = '$name';""")
     if isempty(result)
-        Dict()
+        return Dict()
     else
         row = first(result)
         return Dict(
@@ -41,6 +41,28 @@ function get_datatype(name::String)
             "Bounds" => (row[4], row[5]),
             "Description" => row[6]
         )
+    end
+end
+
+function get_datatype()
+    result = execute(connection, """SELECT * FROM "PhysicalData"."PhysicalData";""")
+    if isempty(result)
+        return Dict()
+    else
+        datas = Dict[]
+        rows = LibPQ.Columns(result)
+        for i in eachindex(rows[1])
+            data = Dict(
+                "Name" => rows[1][i],
+                "Unit" => rows[2][i],
+                "DefaultValue" => rows[3][i],
+                "Min" => rows[4][i],
+                "Max" => rows[5][i],
+                "Description" => rows[6][i]
+            )
+            push!(datas, data)
+        end
+        return Dict("Types" => datas)
     end
 end
 

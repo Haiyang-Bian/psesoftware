@@ -20,7 +20,7 @@ Rectangle {
     color: "#94DDE2"
 
     property string pname: ""
-    property ModelList models: undefined
+    property var models: undefined
     property int modelId: 0
         
 

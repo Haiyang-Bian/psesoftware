@@ -151,7 +151,7 @@ Rectangle {
             openFile.visible = true
             break;
         case 1:
-            varTypes.loadTypesFromDataBase(Controler.db)
+            varTypes.loadTypesFromDataBase()
             break;
         case 2:
             loader2.source = "/variable/Variables/VarInput.qml"

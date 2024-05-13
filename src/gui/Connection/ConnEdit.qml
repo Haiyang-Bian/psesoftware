@@ -12,92 +12,78 @@ Rectangle {
         margins: 2
     }
 
-    property VarModel varTypes: Controler.getVarTypes(connWindow.pname)
+    property var varTypes: undefined
 
-    ColumnLayout {
-        anchors.fill: parent
+    Rectangle {
+        id: tableHeader
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+        height: 50
 
-        Rectangle {
-            Layout.preferredHeight: 50
-            Layout.preferredWidth: editWindow.width
+        Row {
+            anchors.fill: parent
 
-            RowLayout {
-                anchors.fill: parent
-                spacing: 0
+            Repeater {
+                model: ["变量名称", "变量类型", "连接类型"]
 
-                Repeater {
-                    model: ["变量名称", "变量类型", "连接类型"]
+                delegate: Rectangle {
+                    height: 50
+                    width: (tableHeader.width - 50) / 3
 
-                    delegate: Rectangle {
-                        Layout.preferredHeight: 50
-                        Layout.preferredWidth: parent.width / 3
+                    border {
+                        color: "black"
+                        width: 2
+                    }
 
-                        border {
-                            color: "black"
-                            width: 2
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: modelData
-                        }
+                    Text {
+                        anchors.centerIn: parent
+                        text: modelData
                     }
                 }
             }
 
-            TapHandler {
-                acceptedButtons: Qt.RightButton
-                onSingleTapped: eventPoint => {
-                    contextMenu.popup(eventPoint.position)
-                }
-            }
-
-            Menu {
-                id: contextMenu
-                MenuItem {
-                    text: "新建";
-                    onTriggered: {
-                        editVarLoader.source = "/connection/Connection/ConnVarInput.qml"
-                        editVarLoader.active = true
-                    }
+            Button {
+                icon.source: "qrc:/icons/Icons/CodiconDiffAdded.svg"
+                width: 50
+                height: 50
+                onClicked: {
+                    connWindow.typeList.createConnectionVar({
+                        "Name":  nameInput.text,
+                        "Type": "NoUnit",
+                        "Connect": "Equal",
+                        "Description": descriptionInput.text
+                    }, connList.connId)
+                    connList.port.append({
+                        "Name": name,
+                        "Type": "NoUnit",
+                        "Description": des
+                    })
                 }
             }
         }
+    }
 
-        ListView {
-            id: editList
-            Layout.preferredWidth: editWindow.width
-            Layout.fillHeight: true
-            clip: true
+    ListView {
+        id: editList
+        anchors {
+            top: tableHeader.bottom
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
 
-            model: connList.port
+        clip: true
 
-            delegate: ConnVarRow {
-                width: editWindow.width
-                varIndex: index
-            }
+        model: connList.port
+
+        delegate: ConnVarRow {
+            width: editWindow.width
+            varIndex: index
         }
     }
 
 //功能区----------------------------------------------------------------------------------
-
-    Loader {
-        id: editVarLoader
-        active: false
-        source: ""
-        onLoaded: {
-            item.create.connect((name,des)=>{
-                createVar(name, des)
-                editVarLoader.source = ""
-                editVarLoader.active = false
-            })
-        }
-    }
-
-    function createVar(name, des) {
-        connList.port.append({
-            "Name": name,
-            "Description": des
-        })
-    }
 }

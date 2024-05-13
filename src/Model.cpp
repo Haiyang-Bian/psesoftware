@@ -2,6 +2,7 @@
 #include <qimage.h>
 #include <qimagereader.h>
 #include <qbuffer.h>
+#include <qqmlengine.h>
 #include <qsqldatabase.h>
 #include <qsqlquery.h>
 #include <qsqlerror.h>
@@ -107,6 +108,7 @@ Model* ModelList::getItem(const QModelIndex& idx) const
 void ModelList::createItem(QModelIndex order, bool isFilter, QString name) {
     Model* lv1{ new Model };
     Model* father = getItem(order);
+    QQmlEngine::setObjectOwnership(&(lv1->dnd), QQmlEngine::CppOwnership);
     beginInsertRows(order, this->rowCount(order), this->rowCount(order));
     lv1->parentItem = father;
     lv1->row = this->rowCount(order);

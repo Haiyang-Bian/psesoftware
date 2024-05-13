@@ -4,7 +4,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <iostream>
-#include <qsqldatabase.h>
 
 using namespace::std;
 
@@ -59,7 +58,7 @@ public slots:
     }
     Q_INVOKABLE void saveTypes(QUrl path);
     Q_INVOKABLE void loadTypes(QUrl path);
-    Q_INVOKABLE void loadTypesFromDataBase(QVariant dataBase);
+    Q_INVOKABLE void loadTypesFromDataBase();
     Q_INVOKABLE inline void editType(QJsonObject Obj, int index) {
         varTypes[index] = Obj;
     }

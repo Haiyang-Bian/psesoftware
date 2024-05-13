@@ -174,7 +174,7 @@ Rectangle {
 
     function getData(){
         let data = []
-        for (let i = 0;i < cpList.count; ++i){
+        for (let i = 0;i < props.count; ++i){
             data.push(props.get(i).name)
         }
         return data

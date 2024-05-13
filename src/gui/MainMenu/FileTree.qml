@@ -14,7 +14,7 @@ Item {
     TreeModel {
        id: tree_model
        Component.onCompleted: {
-           tree_model.resetItems();
+           //tree_model.resetItems();
        }
     }
 

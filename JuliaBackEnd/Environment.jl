@@ -25,5 +25,5 @@ include("RestApi.jl")
 
 @info "翻译器加载完成!"
 
-serve(async=true)
+serve(middleware=[CorsHandler], async=true)
 #end

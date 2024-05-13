@@ -46,10 +46,7 @@ Window {
             Button {
                 text: "确定"
                 onClicked: {
-                    connWindow.typeList.appendType({
-                        "Type": nameInput.text,
-                        "Description": descriptionInput.text
-                    })
+                    
                     newWindow.createConn(nameInput.text)
                 }
             }

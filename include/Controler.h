@@ -48,10 +48,6 @@ public:
 	Controler(QObject* parent = nullptr) : QObject(parent) {}
 	~Controler(){}
 
-	// 加解密函数
-	QString enCoder(QByteArray text);
-	void deCoder(QString text);
-
 	// 数据库
 	void connectDataBase();
 	QJsonArray getDataTypes();

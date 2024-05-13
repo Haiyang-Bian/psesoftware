@@ -1,6 +1,5 @@
 ﻿import QtQuick 
 import QtQuick.Controls
-// 似乎导入这个库就不会有改属性的报错了
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import Ai4Energy 1.0
@@ -14,7 +13,7 @@ Rectangle {
     visible: true
 
     property string pname: ""
-    property ConnModel typeList: undefined;
+    property var typeList: undefined
 
     Connections {
         target: typeList
@@ -24,95 +23,119 @@ Rectangle {
         }
     }
 
-    RowLayout {
-        anchors.fill: parent
+    Rectangle {
+        anchors {
+            left: parent.left
+            top: parent.top
+            bottom: parent.bottom
+            margins: 3
+        }
+        width: connWindow.width * 0.2
+        border.color: "black"
+        border.width: 2
 
-        Rectangle {
-            Layout.preferredWidth: connWindow.width * 0.2
-            Layout.preferredHeight: connWindow.height
-            Layout.rightMargin: 3
-            Layout.leftMargin: 3
-            Layout.topMargin: 3
-            Layout.bottomMargin: 3
+        Row {
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+            }
+            height: 50
 
-            border.color: "black"
-            border.width: 2
+            Rectangle {
+                id: tableHeader
+                height: 50
+                width: parent.width - 50
+                border.color: "black"
+                border.width: 2
+                color: "#DDDDDE"
+        
+                Text {
+                    anchors.centerIn: parent
+                    text: "连接类型名称"
+                }
 
-            ColumnLayout {
-                anchors.fill: parent
-
-                Rectangle {
-                    id: tableHeader
-                    Layout.preferredWidth: connWindow.width * 0.2
-                    Layout.preferredHeight: 50
-
-                    border.color: "black"
-                    border.width: 2
-                    color: "#DDDDDE"
-              
-                    Text {
-                        anchors.centerIn: parent
-                        text: "连接类型名称"
+                TapHandler {
+                    acceptedButtons: Qt.RightButton
+                    onSingleTapped: eventPoint => {
+                        contextMenu.popup(eventPoint.position)
                     }
+                }
 
-                    TapHandler {
-                        acceptedButtons: Qt.RightButton
-                        onSingleTapped: eventPoint => {
-                            contextMenu.popup(eventPoint.position)
-                        }
-                    }
+                Menu {
+                    id: contextMenu
 
-                    Menu {
-                        id: contextMenu
-
-                        Repeater {
-                            model: ["新建", "导入标准接口", "上传接口(内部使用)"]
-                        
-                            delegate: MenuItem {
-                                text: modelData
-                                
-                                onTriggered: {
-                                    buttonEvents(index)
-                                }
+                    Repeater {
+                        model: ["导入标准接口", "上传接口(内部使用)"]
+                    
+                        delegate: MenuItem {
+                            text: modelData
+                            
+                            onTriggered: {
+                                buttonEvents(index)
                             }
                         }
                     }
                 }
+            }
 
-                ListView {
-                    id: connList
-
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    spacing: 5
-                    clip: true
-
-                    property var port: undefined
-                    property var connId: 0
-
-                    model: connections
-
-                    delegate: mainList
+            Button {
+                icon.source: "qrc:/icons/Icons/CodiconDiffAdded.svg"
+                width: 50
+                height: 50
+                onClicked: {
+                    typeList.appendType({
+                        "Type": "NewConnect" + connList.count,
+                        "Description": "新的接口类型"
+                    })
+                    connections.append({
+                        "Type": "NewConnect" + connList.count,
+                        "Variables": []
+                    })
                 }
             }
         }
 
-        Rectangle {
-            Layout.preferredWidth: connWindow.width * 0.76
-            Layout.preferredHeight: connWindow.height
-            Layout.rightMargin: 3
-            Layout.leftMargin: 3
-            Layout.topMargin: 3
-            Layout.bottomMargin: 3
+        ListView {
+            id: connList
+            anchors {
+                bottom: parent.bottom
+                left: parent.left
+                right: parent.right
+            }
+            height: parent.height - 50
+            
+            spacing: 5
+            clip: true
 
-            border.color: "black"
-            border.width: 2
+            property var port: undefined
+            property var connId: 0
 
-            Loader {
-                id: connLoader
-                anchors.fill: parent
-                source: ""
-                active: false
+            model: connections
+
+            delegate: mainList
+        }
+    }
+
+    Rectangle {
+        anchors {
+            right: parent.right
+            top: parent.top
+            bottom: parent.bottom
+            margins: 3
+        }
+        width: connWindow.width * 0.8
+        border.color: "black"
+        border.width: 2
+
+        Loader {
+            id: connLoader
+            anchors.fill: parent
+            source: ""
+            active: false
+
+            onLoaded: {
+                item.varTypes = Controler.getVarTypes(connWindow.pname)
             }
         }
     }
@@ -125,55 +148,53 @@ Rectangle {
     Component {
         id: mainList
 
-        Rectangle {
-            width: connWindow.width * 0.2
-            height: 50
-            
-            border.color: "black"
-            border.width: 2
+        Row {
 
-            property bool vselected: false
-            property int pIndex: index
+            Rectangle {
+                width: connWindow.width * 0.2 - 50
+                height: 50
+                
+                border.color: "black"
+                border.width: 2
 
-            color: vselected ? "blue" : "white"
-
-            Text {
-                anchors {
-                    fill: parent
-                    leftMargin: 5
-                    topMargin: 5
-                }
-                text: Type
-            }
-
-            TapHandler {
-                acceptedButtons: Qt.RightButton | Qt.LeftButton
-                onSingleTapped: (eventPoint, button) => {
-                    if (button === Qt.RightButton)
-                        contextMenu.popup(eventPoint.position)
+                Text {
+                    anchors {
+                        fill: parent
+                        leftMargin: 5
+                        topMargin: 5
+                    }
+                    text: Type
                 }
 
-                onDoubleTapped: (eventPoint, button) => {
-                    if (button === Qt.LeftButton) {
-                        connList.port = Variables
-                        connList.connId = index
-                        connLoader.source = "/connection/Connection/ConnEdit.qml"
-                        connLoader.active = true
+                TapHandler {
+                    acceptedButtons: Qt.RightButton | Qt.LeftButton
+                    onSingleTapped: (eventPoint, button) => {
+                        if (button === Qt.RightButton)
+                            contextMenu.popup(eventPoint.position)
+                    }
+
+                    onDoubleTapped: (eventPoint, button) => {
+                        if (button === Qt.LeftButton) {
+                            connList.port = Variables
+                            connList.connId = index
+                            connLoader.source = "/connection/Connection/ConnEdit.qml"
+                            connLoader.active = true
+                        }
                     }
                 }
-            }
 
-            Menu {
-                id: contextMenu
+                Menu {
+                    id: contextMenu
 
-                Repeater {
-                    model: ["删除", "重命名"]
-                
-                    delegate: MenuItem {
-                        text: modelData
-                        
-                        onTriggered: {
-                            menuEvents(index, pIndex)
+                    Repeater {
+                        model: ["删除", "重命名"]
+                    
+                        delegate: MenuItem {
+                            text: modelData
+                            
+                            onTriggered: {
+                                menuEvents(index, pIndex)
+                            }
                         }
                     }
                 }
@@ -218,14 +239,10 @@ Rectangle {
     function buttonEvents(type) {
         switch(type){
         case 0:
-            inputLoader.source = "/connection/Connection/ConnInput.qml"
-            inputLoader.active = true
+            typeList.loadConnsFromDB()
             break;
         case 1:
-            typeList.loadConnsFromDB(Controler.db, ["ElectricalStandardLibrary"])
-            break;
-        case 3:
-            typeList.insertDB(Controler.db, "PhotovoltaicElectrolysisHydrogenStorageStandardLibrary")
+            typeList.insertDB()
             break;
         }
     }

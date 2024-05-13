@@ -1,10 +1,21 @@
 # RestFulApi
 
+const CORS_HEADERS = [
+    "Access-Control-Allow-Origin" => "*",
+    "Access-Control-Allow-Methods" => "GET, POST, OPTIONS, PUT, DELETE, PATCH",
+    "Access-Control-Allow-Headers" => "*",
+    "Access-Control-Allow-Credentials" => "true"
+]
+
 # 物理量相关接口
 
 @get "/physicalDatas" function (req::HTTP.Request)
     paras = queryparams(req)
-    get_datatype(paras["name"])
+    if isempty(paras)
+        return get_datatype()
+    else
+        return get_datatype(paras["name"])
+    end
 end
 
 @patch "/physicalDatas" function (req::HTTP.Request)
@@ -31,6 +42,32 @@ end
     else
         @warn "删除失败!"
     end
+end
+
+# 连接类型相关接口
+
+@get "/portTypes" function (req::HTTP.Request)
+    paras = queryparams(req)
+    if isempty(paras)
+        return port_types[]
+    else
+        return port_types[paras["name"]]
+    end
+end
+
+@post "/portTypes" function (req::HTTP.Request)
+    data = json(req, Dict)
+    port_types[] = data
+end
+
+@delete "/portTypes" function (req::HTTP.Request)
+    paras = queryparams(req)
+    delete!(port_types, paras["name"])
+end
+
+@patch "/portTypes" function (req::HTTP.Request)
+    data = json(req, Dict)
+    port_types[data["name"]] = data
 end
 
 # 模型相关接口
@@ -77,4 +114,16 @@ end
         $(paras["problem"])(sys)
     end
     # TODO:再说吧
+end
+
+function CorsHandler(handle)
+    return function (req::HTTP.Request)
+        if HTTP.method(req) == "OPTIONS"
+            return HTTP.Response(200, CORS_HEADERS)
+        else
+            r = handle(req)
+            append!(r.headers, CORS_HEADERS)
+            return r
+        end
+    end
 end

@@ -2,12 +2,13 @@
 #include <QJsonArray>
 #include <QDebug>
 #include <QJsonDocument>
-#include <qsqldatabase.h>
-#include <qsqlquery.h>
-#include <qsqlerror.h>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 #include <qvariant.h>
 #include <iterator>
 #include "../include/ConnectionType.h"
+
+QJsonArray ConnectionType::standardTypes;
 
 ConnectionType::ConnectionType(QObject* parent) : QAbstractListModel(parent) {}
 
@@ -155,98 +156,69 @@ QString ConnectionType::getVarType(int c_index, int index, int role) {
     return variableList[c_index].getVariable(index, role);
 }
 
-void ConnectionType::insertDB(QVariant dataBase, QString name) {
-    QSqlDatabase db = dataBase.value<QSqlDatabase>();
-    QSqlQuery query2(db);
-    query2.exec(QString(R"(SELECT COUNT(*) FROM "%1"."VariableList")").arg(name));
-    int rowCount = 0;
-    if (query2.next()) {
-        int rowCount = query2.value(0).toInt();
-        qDebug() << "表中的总行数是：" << rowCount;
-    }
-    QSqlQuery query(db);
-    query.prepare(QString(R"(INSERT INTO "%1"."ModelList"("Type", "Description") VALUES (?, ?))").arg(name));
-    query2.prepare(QString(R"(INSERT INTO "%1"."VariableList"("Id", "Name", "Type", "Model", "Number", "Init", "Value", "Description") VALUES 
-        (:id, :name, :type, :model, :num, CAST(:init AS JSONB), :value, :des))").arg(name));
-    for (int i : idList) {
-        query.addBindValue(typeList.at(i));
-        query.addBindValue(descriptionList.at(i));
-        if (!query.exec()) {
-            qDebug() << "插入错误:" << query.lastError();
+void ConnectionType::insertDB() {
+    QNetworkRequest request(QUrl("http://localhost:8080/portTypes"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    QJsonObject jsonPayload;
+    jsonPayload.insert("PortTypes", this->getTypes());
+    QByteArray jsonData = QJsonDocument(jsonPayload).toJson();
+    manager.post(request, jsonData);
+    connect(&manager, &QNetworkAccessManager::finished, this, [](QNetworkReply* reply){
+        if (reply->error()) {
+            qDebug() << "请求失败:" << reply->errorString();
         }
-        QJsonObject obj = variableList.at(i).getVars();
-        for (auto k : obj.keys()) {
-            QJsonObject obj1 = obj.value(k).toObject();
-            query2.bindValue(":id", rowCount + 1);
-            query2.bindValue(":name", k);
-            query2.bindValue(":type", obj1.value(QLatin1String("Type")).toString());
-            query2.bindValue(":model", typeList.at(i));
-            QString unit = obj1.value(QLatin1String("Unit")).toString();
-            double value = obj1.value(QLatin1String("Value")).toDouble();
-            int num = obj1.value(QLatin1String("Number")).toInt();
-            query2.bindValue(":num", num);
-            QString min = obj1.value(QLatin1String("Min")).toString();
-            QString max = obj1.value(QLatin1String("Max")).toString();
-            QString des = obj1.value(QLatin1String("Description")).toString();
-            QJsonObject obj2;
-            if (unit != "")
-                obj2.insert("Unit", unit);
-            if (min != "")
-                obj2.insert("Min", min);
-            if (max != "")
-                obj2.insert("Max", max);
-            obj2.insert("ConnectType", obj1.value(QLatin1String("ConnectType")));
-            QJsonDocument doc(obj2);
-            QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
-            query2.bindValue(":init", jsonString);
-            QString arr = "{%1}";
-            query2.bindValue(":value", arr.arg(value));
-            if (des != "")
-                query2.bindValue(":des", des);
-            else
-                query2.bindValue(":des", QVariant(QVariant::String));
-            if (!query2.exec()) {
-                qDebug() << "插入错误:" << query2.lastError();
-            }
-            rowCount += 1;
+        else {
+            // 读取响应的内容
+            QByteArray responseData = reply->readAll();
+            qDebug() << "响应内容:" << responseData;
         }
-    }
+        reply->deleteLater();
+    });
 }
 
-void ConnectionType::loadConnsFromDB(QVariant dataBase, QVariantList libs) {
-    QSqlDatabase db = dataBase.value<QSqlDatabase>();
-    QSqlQuery query1(db), query2(db);
-    QString sql1 = R"(SELECT "Type", "Description" FROM "%1"."ModelList" WHERE "Equations" IS NULL AND "Icon" IS NULL;)";
-    QString sql2 = R"(SELECT "Name", "Type", "Init" FROM "%1"."VariableList" WHERE "Model" = '%2';)";
-    for (auto lib : libs) {
-        query1.prepare(sql1.arg(lib.value<QString>()));
-        if (!query1.exec()) {
-            qDebug() << "查询数据失败：" << query1.lastError().text();
-        }
-        while (query1.next())
-        {
-            query2.prepare(sql2.arg(lib.value<QString>()).arg(query1.value(0).toString()));
-            if (!query2.exec()) {
-                qDebug() << "查询数据失败：" << query2.lastError().text();
+void ConnectionType::loadConnsFromDB() {
+    if (standardTypes.isEmpty()) {
+        QNetworkRequest request(QUrl("http://localhost:8080/portTypes"));
+        manager.get(request);
+        connect(&manager, &QNetworkAccessManager::finished, this, [this](QNetworkReply* reply) {
+            if (reply->error()) {
+                qDebug() << "请求失败:" << reply->errorString();
             }
-            Variable vars;
-            while (query2.next())
-            {
-                QJsonObject obj;
-                obj.insert("Name", query2.value(0).toString());
-                obj.insert("Type", query2.value(1).toString());
-                obj.insert("Connect", QJsonDocument::fromJson(query2.value(2).toByteArray()).object().value(QLatin1String("ConnectType")).toString());
-                vars.appendVar(obj);
+            else {
+                // 读取响应的内容
+                QJsonObject res = QJsonDocument::fromJson(reply->readAll()).object();
+                QJsonArray arr = res["PortTypes"].toArray();
+                standardTypes = arr;
+                beginInsertRows(QModelIndex(), 0, arr.size() - 1);
+                for (auto type : arr) {
+                    QJsonObject port = type.toObject();
+                    Variable vars;
+                    for (auto var : port.value("Variables").toArray())
+                        vars.appendVar(var.toObject());
+                    idList.append(this->rowCount());
+                    typeList.append(port.value("Type").toString());
+                    descriptionList.append(port.value("Description").toString());
+                    variableList.append(vars);
+                }
+                endInsertRows();
+                emit updateList();
             }
-            query2.clear();
-            beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount());
-            idList.append(this->rowCount());
-            typeList.append(query1.value(0).toString());
-            descriptionList.append(query1.value(1).toString());
-            variableList.append(vars);
-            endInsertRows();
-        }
-        query1.clear();
+            reply->deleteLater();
+            });
     }
-    emit updateList();
+    else
+    {
+        beginInsertRows(QModelIndex(), 0, standardTypes.size() - 1);
+        for (auto type : standardTypes) {
+            QJsonObject port = type.toObject();
+            Variable vars;
+            for (auto var : port.value("Variables").toArray())
+                vars.appendVar(var.toObject());
+            idList.append(this->rowCount());
+            typeList.append(port.value("Type").toString());
+            descriptionList.append(port.value("Description").toString());
+            variableList.append(vars);
+        }
+        endInsertRows();
+    }
 }

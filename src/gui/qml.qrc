@@ -8,7 +8,6 @@
         <file>Connection/ConnEdit.qml</file>
         <file>Connection/ConnInput.qml</file>
         <file>Connection/Conns.qml</file>
-        <file>Connection/ConnVarInput.qml</file>
         <file>Connection/ConnVarRow.qml</file>
     </qresource>
     <qresource prefix="/model">
