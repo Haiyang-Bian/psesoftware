@@ -130,7 +130,9 @@ public slots:
     Q_INVOKABLE inline QString getVarType(QString conn, QString name) {
         return portList.value(conn).vars.value(name).value("Type").toString();
     }
-    Q_INVOKABLE QList<QString> getTypeList();
+    Q_INVOKABLE inline QList<QString> getTypeList() {
+        return typeList;
+    }
     // 数据库交互函数
     Q_INVOKABLE void insertDB();
     Q_INVOKABLE void loadConnsFromDB();

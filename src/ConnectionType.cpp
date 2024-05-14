@@ -42,10 +42,6 @@ QVariant ConnectionType::data(const QModelIndex& index, int role) const {
     }
 }
 
-QList<QString> ConnectionType::getTypeList() {
-    return typeList;
-}
-
 QHash<int, QByteArray> ConnectionType::roleNames() const {
     static QHash<int, QByteArray> roles{
         {TypeRole, "Type"},

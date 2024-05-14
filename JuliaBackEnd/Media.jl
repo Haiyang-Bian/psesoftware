@@ -234,91 +234,21 @@ end
 
 parse_media(::Nothing) = Dict()
 
-function parse_media(m::Dict)
+function parse_media(m::Dict, sys::String)
     isempty(m) && return nothing
     if m["List"] isa String
         return Media{true}(
-            m["Name"],
+            m["Name"] * sys,
             m["Type"],
             m["List"]
         )
     else
         return Media{false}(
-            m["Name"],
+            m["Name"] * sys,
             m["Type"],
             m["List"]
         )
     end
-end
-
-# 将混合物展开
-function collect_mix_media(media_list::Set)
-    mix_list = Set([])
-    for media in media_list
-        if media["Type"] == "Mixture"
-            union!(mix_list, [get_media(_media) for (_media, _) in media["List"]])
-        end
-    end
-    return mix_list
-end
-
-# 创建物质
-# 创建混合物组分
-function create_mix_component(io, mix::Dict)
-    isnothing(mix) && return nothing
-    write(io, "@mtkmodel _$(mix["Name"])\n")
-    write(io, "@parameters begin\n id=$(mix["Number"])end\n")
-    write(io, "@variables begin\nx(t)=0.0\nend\n")
-    write(io, "end\n")
-    nothing
-end
-
-# 混合物
-function create_mixture(io, media::Dict)
-    write(io, "@mtkmodel $(media["Name"]) begin\n")
-    write(io, "@components begin\n")
-    # 设置约束方程
-    eq = ""
-    for (k, v) in media_type.mixlist
-        # 赋予默认值,以物质类型的完全小写作为该系统的名字
-        write(io, "$(lowercase(k)) = _$k(x=$v)\n")
-        eq = eq * "$(lowercase(k)).x+"
-    end
-    write(io, "end\n")
-    write(io, "@equations begin\n$(eq[1:end-1])~1\nend\n")
-    write(io, "end\n")
-    nothing
-end
-
-# 遍历整个物质表,创建纯物质的同时,收集混合物中的组成物质
-function create_media(io, media::Dict)
-    if media["Type"] == "Mixture"
-        # 创建混合物质
-        create_mixture(io, media)
-    else
-        # 创建纯物质
-        write(io, "@mtkmodel $(media["Name"]) begin\n")
-        write(io, "@parameters begin\nid=$(media["Number"])\nend\n")
-        if haskey(media, "Variables")
-            vars = ""
-            # 设置约束方程
-            eq = ""
-            for (k, v) in media["Variables"]
-                eq = eq * "$(lowercase(k)).x+"
-                data = setdata(v["Type"])
-                # 处理数组
-                vars = vars * (
-                    haskey(v, "Number") ?
-                    "$k(t)[1:$(v["Number"])] = $(data["Value"]), " * parse_metadata(data) * "\n" :
-                    "$k(t) = $(data["Value"]), " * parse_metadata(data) * "\n"
-                )
-            end
-            write(io, "@variables begin\n$vars\nend\n")
-            write(io, "@equations begin\n$(eq[1:end-1])~1\nend\n")
-        end
-        write(io, "end\n")
-    end
-    nothing
 end
 
 nothing

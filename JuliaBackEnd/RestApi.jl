@@ -49,15 +49,15 @@ end
 @get "/portTypes" function (req::HTTP.Request)
     paras = queryparams(req)
     if isempty(paras)
-        return port_types[]
+        return get_port_types()
     else
-        return port_types[paras["name"]]
+        return get_port_types(paras["name"])
     end
 end
 
 @post "/portTypes" function (req::HTTP.Request)
     data = json(req, Dict)
-    port_types[] = data
+
 end
 
 @delete "/portTypes" function (req::HTTP.Request)
@@ -74,46 +74,48 @@ end
 
 @get "/models" function (req::HTTP.Request)
     paras = queryparams(req)
-    get_model(paras["type"], paras["libName"])
+    lib, name = split(paras["type"], "_", limit=2)
+    get_model(name, lib)
 end
 
 @put "/models" function (req::HTTP.Request)
-    paras = queryparams(req)
     model = json(req, Dict)
+    lib, name = split(model["Type"], "_", limit=2)
     comp = Component(model)
     code = compiler(comp, false)
-    set_model(paras["type"], paras["libName"], model, code)
+    set_model(name, lib, model, code)
 end
 
 @post "/models" function (req::HTTP.Request)
-    paras = queryparams(req)
     model = json(req, Dict)
+    lib, name = split(model["Type"], "_", limit=2)
     comp = Component(model)
     code = compiler(comp, false)
-    create_model(paras["type"], paras["libName"], model, code)
+    create_model(name, lib, model, code)
 end
 
 @delete "/models" function (req::HTTP.Request)
     paras = queryparams(req)
+    lib, name = split(paras["type"], "_", limit=2)
     result = execute(connection,
-        """DELETE FROM "$(paras["libName"])"."ModelList" WHERE "Type" = '$(paras["type"])';"""
+        """DELETE FROM "$(lib)"."ModelList" WHERE "Type" = '$(name)';"""
     )
     if LibPQ.error_message(result) == ""
-        @info "已删除$paras[type]模型"
+        @info "已删除$name模型"
     else
         @warn "删除失败!"
     end
 end
 
 # 计算相关接口
-
-@get "/calculate" function (req::HTTP.Request)
+@post "/simulation" function (req::HTTP.Request)
     paras = queryparams(req)
-    sys = json(req, Dict)
-    @eval begin
-        $(paras["problem"])(sys)
+    data = json(req, Dict)
+    if paras["type"] == "analysis_system"
+        return analysis_system(data)
+    elseif paras["type"] == "calculation"
+        return simulation(data)
     end
-    # TODO:再说吧
 end
 
 function CorsHandler(handle)

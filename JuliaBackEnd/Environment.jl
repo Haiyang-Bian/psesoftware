@@ -3,16 +3,18 @@
 # 翻译器主模块
 @info "开始加载模块"
 
-using LibPQ, JSON3, Oxygen, HTTP, Base64
+using LibPQ, JSON3, Oxygen, HTTP, Base64, Dates
 using ModelingToolkit, DifferentialEquations, Unitful, CoolProp
 
 global components = Channel(20)
-const global ready_components = Ref{Dict}(Dict())
+const global ready_components = Ref(Dict())
+const global custom_data_types = Ref([])
+const global custom_port_types = Ref(Dict())
+const global custom_models = Ref(Dict())
 const global port_types = Ref(Dict())
 const global work_path = pwd()
-const global lib_load = Ref([])
 global workers = Ref(8)
-global simulation_system = nothing
+const global current_system = Ref{Any}()
 
 include("DataExchanger.jl")
 include("BasicData.jl")

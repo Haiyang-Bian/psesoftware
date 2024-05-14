@@ -100,7 +100,12 @@ end
 function get_media(name::String)
 end
 
-# 查找组件与接口
+# 查找接口
+function get_port_type(name::String)
+
+end
+
+# 查找组件
 function get_model(name::String, lib_name::String)
     result = execute(connection, """SELECT ("ModelData", "JuliaCode") FROM "$lib_name"."ModelList" WHERE "Type" = '$name';""")
     if !isempty(result)
@@ -137,6 +142,28 @@ function create_model(type::String, lib_name::String, model::Dict, code::String)
         @info "已创建$type模型"
     else
         @warn "创建失败!"
+    end
+end
+
+function get_data(type::Symbol, meta_type::Symbol)
+    if meta_type == :DataType
+        tag, name = split(string(type), "_", limit=2)
+        if tag == "Standard"
+            return get_datatype(name)
+        else
+            for data in custom_data_types[]
+                if data["Name"] == name
+                    return data
+                end
+            end
+        end
+    elseif meta_type == :Port
+        tag, name = split(string(type), "_", limit=2)
+        if tag == "Standard"
+            return get_port_type(name)
+        else
+            return custom_port_types[][name]
+        end
     end
 end
 
