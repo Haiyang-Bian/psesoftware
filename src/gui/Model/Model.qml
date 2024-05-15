@@ -54,8 +54,8 @@ Rectangle {
 
                 ModelSubSystem {
                     id: subSystems
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
+                    width: parent.width
+                    height: parent.height
                 }
 
                 Connections {

@@ -74,8 +74,12 @@ end
 
 @get "/models" function (req::HTTP.Request)
     paras = queryparams(req)
-    lib, name = split(paras["type"], "_", limit=2)
-    get_model(name, lib)
+    if haskey(paras, "libName")
+        return get_model(paras["libName"])
+    else
+        lib, name = split(paras["type"], "_", limit=2)
+        return get_model(name, lib)
+    end
 end
 
 @put "/models" function (req::HTTP.Request)

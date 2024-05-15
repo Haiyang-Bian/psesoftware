@@ -26,11 +26,10 @@
     </qresource>
     <qresource prefix="/mainmenu">
         <file>MainMenu/FileTree.qml</file>
-        <file>MainMenu/IconToolsBar.qml</file>
         <file>MainMenu/Menus.qml</file>
         <file>MainMenu/MyMessage.qml</file>
         <file>MainMenu/ProjectCreate.qml</file>
-        <file>MainMenu/TopToolsBar.qml</file>
+        <file>MainMenu/LibTree.qml</file>
     </qresource>
     <qresource prefix="/dndkit">
         <file>DndComp/DragComponent.qml</file>
@@ -66,6 +65,8 @@
         <file>Icons/CodiconSymbolParameter.svg</file>
         <file>Icons/CodiconSymbolStructure.svg</file>
         <file>Icons/CodiconSymbolVariable.svg</file>
+        <file>Icons/CodiconLibrary.svg</file>
+        <file>Icons/CodiconFolderOpened.svg</file>
     </qresource>
     <qresource prefix="/mainWindow">
         <file>main.qml</file>

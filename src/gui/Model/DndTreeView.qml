@@ -81,9 +81,15 @@ Rectangle {
                     text: "▶"
                 }
 
+                Image {
+                    id: icon
+                    x: padding + (isTreeNode ? depth * indentation : 0) + padding
+                    source: getIcon(background.myType, expanded)
+                }
+
                 Label {
                     id: label
-                    x: padding + (isTreeNode ? (depth + 1) * indentation : 0)
+                    x: padding + (isTreeNode ? (depth + 1) * indentation : 0) + padding + icon.implicitWidth
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.margins: 3
                     width: parent.width - padding - x
@@ -95,7 +101,7 @@ Rectangle {
                     id: labelInput
                     focus: false
                     visible: false
-                    x: padding + (isTreeNode ? (depth + 1) * indentation : 0)
+                    x: padding + (isTreeNode ? (depth + 1) * indentation : 0) + padding + icon.implicitWidth
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width - padding - x
                     clip: true
@@ -125,8 +131,10 @@ Rectangle {
                     }
 
                     onDoubleTapped: {
-                        let treeIndex = treeView.index(row, column)
-                        root.editModel(treeIndex)
+                        if (background.myType !== "DataBase" && background.myType !== "Filter") {
+                            let treeIndex = treeView.index(row, column)
+                            root.editModel(treeIndex)
+                        }
                     }
                 }
 
@@ -198,6 +206,20 @@ Rectangle {
                 onDropped: drop => {
                     if (drop.source.myType !== "DataBase")
                         treeModel.moveItem(treeView.index(drop.source.myRow, 0), treeView.index(row, 0))
+                }
+            }
+
+            function getIcon(type, op) {
+                switch(type) {
+                case "DataBase":
+                    return "qrc:/icons/Icons/CodiconLibrary.svg"
+                case "Filter":
+                    if (op)
+                        return "qrc:/icons/Icons/CodiconFolderOpened.svg"
+                    else
+                        return "qrc:/icons/Icons/CodiconFolder.svg"
+                case "Normal":
+                    return "qrc:/icons/Icons/CarbonModelAlt.svg"
                 }
             }
         }

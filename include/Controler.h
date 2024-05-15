@@ -8,6 +8,7 @@
 #include "ConnectionType.h"
 #include "VariableType.h"
 #include "DndControler.h"
+#include "LibTreeModel.h"
 #include <qqmlengine.h>
 
 // 项目类
@@ -27,25 +28,15 @@ public:
 	QMap<QString, DndControler> system;
 };
 
-
-// 可拖放组件列表
-struct DndComp
-{
-	QString type;
-	QByteArray icon;
-	QJsonArray handlers;
-	QJsonArray paras;
-	QString des;
-};
-
-
 // 软件整体控制类,MVC架构
 class Controler  : public QObject
 {
 	Q_OBJECT
 
 public:
-	Controler(QObject* parent = nullptr) : QObject(parent) {}
+	Controler(QObject* parent = nullptr) : QObject(parent) {
+		QQmlEngine::setObjectOwnership(&compList, QQmlEngine::CppOwnership);
+	}
 	~Controler(){}
 
 	// 数据库
@@ -82,12 +73,15 @@ public:
 	Q_INVOKABLE void removeSystem(QString name, QString sname);
 
 	// 组件库管理
-	Q_INVOKABLE QJsonArray loadLibs();
 	Q_INVOKABLE void selectLibs(QVariantList libs);
+	Q_INVOKABLE void useLocalLibs(QString name) {
+		compList.useLocalModels(projects[name].models.getDndModels(), name);
+	}
 
 	// 数据库交互
-	Q_INVOKABLE QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL");
-	Q_INVOKABLE void linkLibrary();
+	Q_INVOKABLE inline LibTreeModel* linkLibrary() {
+		return &compList;
+	}
 
 	// 生成仿真文件
 	Q_INVOKABLE void generateSimulation(QString name, QString process);
@@ -108,7 +102,7 @@ private:
 	// 使用的库列表
 	QList<QString> libList;
 	// 库里的组件列表
-	QMap<QString, QList<DndComp>> compList;
+	LibTreeModel compList;
 	// HTTP
 	QNetworkAccessManager* netWorker;
 };

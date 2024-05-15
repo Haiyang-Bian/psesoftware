@@ -29,8 +29,8 @@ Rectangle {
 
 
         delegate: Item {
-            implicitWidth: padding + label.x + label.implicitWidth + padding
-            implicitHeight: label.implicitHeight * 1.5
+            implicitWidth: padding + label.x + label.implicitWidth + icon.implicitWidth + padding
+            implicitHeight: 40
 
             readonly property real indentation: 20
             readonly property real padding: 5
@@ -62,41 +62,68 @@ Rectangle {
             Rectangle {
                 id: background
                 anchors.fill: parent
+                anchors.margins: 2
                 color: "transparent"
-            }
 
-            Label {
-                id: indicator
-                x: padding + (depth * indentation)
-                anchors.verticalCenter: parent.verticalCenter
-                visible: isTreeNode && hasChildren
-                text: "▶"
+                Label {
+                    id: indicator
+                    x: padding + (depth * indentation)
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: isTreeNode && hasChildren
+                    text: "▶"
 
-                TapHandler {
-                    onSingleTapped: {
-                        let index = treeView.index(row, column)
-                        treeView.selectionModel.setCurrentIndex(index, ItemSelectionModel.NoUpdate)
-                        treeView.toggleExpanded(row)
+                    TapHandler {
+                        onSingleTapped: {
+                            let index = treeView.index(row, column)
+                            treeView.selectionModel.setCurrentIndex(index, ItemSelectionModel.NoUpdate)
+                            treeView.toggleExpanded(row)
+                        }
+                    }
+                }
+
+                Image {
+                    id: icon
+                    x: padding + (isTreeNode ? depth * indentation : 0) + padding
+                    source: isTreeNode && hasChildren ? iconChange(expanded) : getIcon(row)
+                }
+
+                Label {
+                    id: label
+                    x: padding + (isTreeNode ? (depth + 1) * indentation : 0) + padding + icon.implicitWidth
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width - padding - x
+                    clip: true
+                    text: model.display
+
+                    TapHandler {
+                        onDoubleTapped: {
+                            if (depth === 1) {
+                                var p = tree_model.parent(treeView.index(row, column))
+                                var pname = tree_model.data(p, 0)
+                                projectTree.editItem(pname, treeView.index(row, column).row)
+                            }
+                        }
                     }
                 }
             }
 
-            Label {
-                id: label
-                x: padding + (isTreeNode ? (depth + 1) * indentation : 0)
-                anchors.verticalCenter: parent.verticalCenter
-                width: parent.width - padding - x
-                clip: true
-                text: model.display
+            function iconChange(s) {
+                if (s)
+                    return "qrc:/icons/Icons/CodiconFolderOpened.svg"
+                else
+                    return "qrc:/icons/Icons/CodiconFolder.svg"
+            }
 
-                TapHandler {
-                    onDoubleTapped: {
-                        if (depth === 1) {
-                            var p = tree_model.parent(treeView.index(row, column))
-                            var pname = tree_model.data(p, 0)
-                            projectTree.editItem(pname, treeView.index(row, column).row)
-                        }
-                    }
+            function getIcon(type) {
+                switch(type){
+                case 1:
+                    return "qrc:/icons/Icons/CarbonValueVariable.svg"
+                case 2:
+                    return "qrc:/icons/Icons/CarbonConnect.svg"
+                case 3:
+                    return "qrc:/icons/Icons/CarbonModelAlt.svg"
+                case 4:
+                    return "qrc:/icons/Icons/CarbonModelBuilder.svg"
                 }
             }
         }

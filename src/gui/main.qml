@@ -218,6 +218,11 @@ ApplicationWindow {
                     Controler.creatProject(name)
                 })
             }
+            if (item.updateLibs !== undefined){
+                item.updateLibs.connect(arr => {
+                    Controler.selectLibs(arr)
+                })
+            }
             menuLoader.item.closing.connect(()=>{
                 menuLoader.source = ""
                 menuLoader.active = false

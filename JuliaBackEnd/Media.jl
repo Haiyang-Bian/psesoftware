@@ -238,13 +238,13 @@ function parse_media(m::Dict, sys::String)
     isempty(m) && return nothing
     if m["List"] isa String
         return Media{true}(
-            m["Name"] * sys,
+            sys * m["Name"],
             m["Type"],
             m["List"]
         )
     else
         return Media{false}(
-            m["Name"] * sys,
+            sys * m["Name"],
             m["Type"],
             m["List"]
         )

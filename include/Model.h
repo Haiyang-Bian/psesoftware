@@ -157,6 +157,74 @@ public:
         }
     }
 
+    void getDndModel(Model* model, QJsonArray& data) {
+        if (model->subItems.isEmpty()) {
+            Model* m = model;
+            QStringList name;
+            while (m != rootItem)
+            {
+                name.push_front(m->name);
+                m = m->parentItem;
+            }
+            QString typeName = name.join("_");
+            QJsonObject modelData;
+            modelData.insert("Type", typeName);
+            QJsonObject ports = model->data.value("Ports").toObject();
+            QJsonObject::iterator it;
+            QJsonArray handlers;
+            for (it = ports.begin(); it != ports.end(); ++it) {
+                handlers.append(QJsonObject{
+                    {"Name",it.key()},
+                    {"Position",it->toObject().value("Position")},
+                    {"Offset",it->toObject().value("Offset")},
+                    });
+            }
+            modelData.insert("Handlers", handlers);
+            modelData.insert("Icon", QString("data:image/png;base64,%1").arg(
+                model->data.value("Icon").toString()
+            ));
+            modelData.insert("Description", model->data.value("Description").toString());
+            QJsonArray paras, sparas;
+            QJsonObject p = model->data.value("Parameters").toObject();
+            for (it = p.begin(); it != p.end(); ++it) {
+                QJsonObject pp = it->toObject();
+                if (!pp.value("Value").isString()) {
+                    paras.append(QJsonObject{
+                        {"Name", it.key()},
+                        {"Gui", pp.value("Gui").toString()}
+                        });
+                }
+            }
+            QJsonObject sp = model->data.value("StructuralParameters").toObject();
+            for (it = sp.begin(); it != sp.end(); ++it) {
+                QJsonObject pp = it->toObject();
+                if (!pp.value("Value").isString()) {
+                    sparas.append(QJsonObject{
+                        {"Name", it.key()},
+                        {"Gui", pp.value("Gui").toString()}
+                        });
+                }
+            }
+            if (!paras.isEmpty())
+                modelData.insert("Paras", paras);
+            if (!sparas.isEmpty())
+                modelData.insert("SParas", sparas);
+            data.append(modelData);
+        }
+        else
+        {
+            for (Model* m : model->subItems) {
+                getDndModel(m, data);
+            }
+        }
+    }
+
+    QJsonArray getDndModels() {
+        QJsonArray data;
+        getDndModel(rootItem, data);
+        return data;
+    }
+
     void getModelsXml(Model* model, QDomDocument& models) {
         if (model->subItems.isEmpty()) {
             Model* m = model;
@@ -198,6 +266,7 @@ public:
                     Model* n = new Model{};
                     n->name = typeName;
                     n->parentItem = mp;
+                    n->row = mp->subItems.size();
                     mp->subItems.append(n);
                     if (name.isEmpty()) {
                         n->data = model;

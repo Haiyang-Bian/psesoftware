@@ -101,11 +101,7 @@ void Controler::selectLibs(QVariantList libs) {
     for (QVariant v : libs) {
         libList.append(v.toString());
     }
-    this->linkLibrary();
-}
-
-void Controler::linkLibrary() {
-    
+    compList.loadLibs(libList);
 }
 
 void Controler::generateSimulation(QString name, QString process) {
@@ -133,25 +129,4 @@ void Controler::simulation(QJsonObject settings)
 {
     QJsonDocument doc(settings);
     QString jsonString = doc.toJson(QJsonDocument::Compact);
-}
-
-QJsonArray Controler::loadLibs() {
-    QJsonArray libs;
-    for (QString k : compList.keys()) {
-        QJsonObject lib;
-        lib.insert("Name", k);
-        QJsonArray models;
-        for (DndComp c : compList[k]) {
-            QJsonObject model;
-            model.insert("Type", c.type);
-            model.insert("Icon", QString("data:image/png;base64,%1").arg(c.icon.constData()));
-            model.insert("Handlers", c.handlers);
-            model.insert("Paras", c.paras);
-            model.insert("Des", c.des);
-            models.append(model);
-        }
-        lib.insert("Models", models);
-        libs.append(lib);
-    }
-    return libs;
 }

@@ -117,6 +117,56 @@ function get_model(name::String, lib_name::String)
     return Dict()
 end
 
+function get_model(lib::String)
+    result = execute(connection, """SELECT "ModelData" FROM "$lib"."ModelList";""")
+    if isempty(result)
+        return Dict("Error" => "查询失败")
+    else
+        datas = Dict[]
+        rows = LibPQ.Columns(result)[1]
+        for m in rows
+            model = JSON3.read(String(base64decode(m)), Dict)
+            handlers = map(collect(model["Ports"])) do port
+                h = Dict()
+                push!(h, "Name" => port.first)
+                push!(h, "Position" => port.second["Position"])
+                push!(h, "Offset" => port.second["Offset"])
+                return h
+            end
+            paras = map(collect(model["Parameters"])) do para
+                if para.second["Value"] isa Number
+                    return Dict(
+                        "Name" => para.first,
+                        "Gui" => para.second["Gui"]
+                    )
+                end
+                nothing
+            end
+            sparas = map(collect(model["StructuralParameters"])) do spara
+                if spara.second["Value"] isa Number || spara.second["Value"] isa Bool
+                    return Dict(
+                        "Name" => spara.first,
+                        "Gui" => spara.second["Gui"]
+                    )
+                end
+                nothing
+            end
+            filter!(x -> !isnothing(x), paras)
+            filter!(x -> !isnothing(x), sparas)
+            data = Dict(
+                "Type" => model["Type"],
+                "Icon" => "data:image/png;base64," * model["Icon"],
+                "Paras" => paras,
+                "SParas" => sparas,
+                "Handlers" => handlers,
+                "Description" => model["Description"]
+            )
+            push!(datas, data)
+        end
+        return Dict("Models" => datas)
+    end
+end
+
 function set_model(type::String, lib_name::String, model::Dict, code::String)
     result = execute(connection,
         """UPDATE "$lib_name"."ModelList" SET 

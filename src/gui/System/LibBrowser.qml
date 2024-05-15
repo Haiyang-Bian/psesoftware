@@ -10,6 +10,8 @@ Window {
     width: 400
     height: 400
 
+    signal updateLibs(var arr)
+
     Rectangle {
         id: liblist
         anchors {
@@ -19,10 +21,10 @@ Window {
             margins: 2
         }
         width: parent.width * 0.7
-        color: "#f0f0f0" // 背景颜色
-        border.color: "black" // 边框颜色
+        color: "#f0f0f0" 
+        border.color: "black" 
         border.width: 1
-        radius: 5 // 边框圆角
+        radius: 5 
 
         ScrollView {
             anchors.fill: parent
@@ -79,7 +81,7 @@ Window {
                         arr.push(item.name)
                     }
                 }   
-                Controler.selectLibs(arr)
+                libBrowser.updateLibs(arr)
                 libBrowser.close()
             }
         }

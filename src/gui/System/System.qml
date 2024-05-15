@@ -2,6 +2,7 @@
 import QtQuick.Controls
 import QtQuick.Layouts
 import "qrc:/dndkit/DndComp"
+import "qrc:/mainmenu/MainMenu"
 
 Rectangle {
     id: prosessWindow
@@ -25,7 +26,7 @@ Rectangle {
 
     Action {
         id: runAction
-        icon.source: "qrc:/icons/Icons/CodiconDebugAlt.svg" // 请替换为适当的图标名称或路径
+        icon.source: "qrc:/icons/Icons/CodiconDebugAlt.svg"
         onTriggered: {
             Controler.generateSimulation(sysWindow.pname, sysWindow.sysname)
             initAndSet.source = "/system/System/InitAndSet.qml"
@@ -35,10 +36,9 @@ Rectangle {
 
     Action {
         id: saveAction
-        icon.source: "qrc:/icons/Icons/CodiconSave.svg" // 请替换为适当的图标名称或路径
+        icon.source: "qrc:/icons/Icons/CodiconSave.svg"
         onTriggered: {
-            console.log("保存被点击")
-            // 保存动作的逻辑
+            
         }
     }
 
@@ -46,7 +46,7 @@ Rectangle {
         id: setAction
         icon.source: "qrc:/icons/Icons/CarbonSettings.svg"
         onTriggered: {
-            initAndSet.source = "/system/System/InitAndSet.qml"
+            initAndSet.source = "qrc:/system/System/InitAndSet.qml"
             initAndSet.active = true
         }
     }
@@ -61,27 +61,9 @@ Rectangle {
 
     Action {
         id: update
-        icon.source: "qrc:/icons/Icons/CodiconRefresh.svg" // 请替换为适当的图标名称或路径
+        icon.source: "qrc:/icons/Icons/CodiconRefresh.svg"
         onTriggered: {
-           var libs = Controler.loadLibs()
-           if (libs.length != 0) {
-                libs.forEach(lib => {
-                    var models = []
-                    lib.Models.forEach(model => {
-                        models.push({
-                            "Type": model.Type,
-                            "Icon": model.Icon,
-                            "Handlers": model.Handlers,
-                            "Paras": model.Paras,
-                            //"Des": model.des
-                        })
-                    })
-                    compList.append({
-                        "LibName": lib.Name,
-                        "Models": models
-                    })
-                })
-           }
+           
         }
     }
 
@@ -96,12 +78,93 @@ Rectangle {
         RowLayout {
             id: toolBarRow
             spacing: 10
-            ToolButton { action: browseAction }
-            ToolButton { action: runAction }
-            ToolButton { action: saveAction }
-            ToolButton { action: update }
-            ToolButton { action: setAction }
-            ToolButton { action: checkCharts }
+            ToolButton { 
+                action: browseAction 
+
+                ToolTip {
+                    text: "库浏览器"
+                    visible: parent.hovered
+                    background: Rectangle {
+                        border {
+                            color: "black"
+                            width: 1
+                        }
+                        radius: 5
+                    }
+                }
+            }
+            ToolButton { 
+                action: runAction
+                
+                ToolTip {
+                    text: "开始仿真"
+                    visible: parent.hovered
+                    background: Rectangle {
+                        border {
+                            color: "black"
+                            width: 1
+                        }
+                        radius: 5
+                    }
+                }
+            }
+            ToolButton { 
+                action: saveAction 
+                ToolTip {
+                    text: "保存"
+                    visible: parent.hovered
+                    background: Rectangle {
+                        border {
+                            color: "black"
+                            width: 1
+                        }
+                        radius: 5
+                    }
+                }
+            }
+            ToolButton { 
+                action: update 
+                ToolTip {
+                    text: "刷新"
+                    visible: parent.hovered
+                    background: Rectangle {
+                        border {
+                            color: "black"
+                            width: 1
+                        }
+                        radius: 5
+                    }
+                }
+            }
+            ToolButton { 
+                action: setAction 
+                ToolTip {
+                    text: "仿真设置"
+                    visible: parent.hovered
+                    background: Rectangle {
+                        border {
+                            color: "black"
+                            width: 1
+                        }
+                        radius: 5
+                    }
+                }
+            }
+            ToolButton { 
+                action: checkCharts 
+
+                ToolTip {
+                    text: "图表"
+                    visible: parent.hovered
+                    background: Rectangle {
+                        border {
+                            color: "black"
+                            width: 1
+                        }
+                        radius: 5
+                    }
+                }
+            }
         }
     }
 
@@ -117,7 +180,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.top: tools.bottom
         color: "#F9F0FD"
-        clip: true // 确保内容不会超出边栏区域
+        clip: true
 
         property bool isStored: true
 
@@ -139,7 +202,7 @@ Rectangle {
                     id: rotation
                     origin.x: exIcon.width / 2
                     origin.y: exIcon.height / 2
-                    angle: 0 // 初始角度
+                    angle: 0
                 }
             }
 
@@ -157,19 +220,17 @@ Rectangle {
             }
         }
 
-        ListView {
+        LibTree {
             id: libList
             anchors {
                left: sidebar.left
                top: sidebar.top
                bottom: sidebar.bottom
             }
-            width: sidebar.width - 20
+            width: sidebar.isStored ? sidebar.width - 20 : 0
 
-            model: compList
-
-            delegate: libsDele
-       }
+            treeModel: Controler.linkLibrary()
+        }
     }
 
 
@@ -187,17 +248,16 @@ Rectangle {
 
 // 功能区------------------------------------------------------------------------------------------
 
-    ListModel {
-        id: compList
-    }
-
     Loader {
         id: libBro
         active: false
         anchors.fill: parent
-        source: "/system/System/LibBrowser.qml"
+        source: "qrc:/system/System/LibBrowser.qml"
 
         onLoaded: {
+            item.updateLibs.connect(arr=>{
+                Controler.selectLibs(arr)
+            })
             libBro.item.closing.connect(()=>{
                 libBro.source = ""
                 libBro.active = false
@@ -216,89 +276,6 @@ Rectangle {
                 initAndSet.source = ""
                 initAndSet.active = false
             })
-        }
-    }
-
-    Component {
-        id: libsDele
-
-        Rectangle {
-            id: module
-            width: sidebar.width - 20
-            height: 50
-            border.color: "lightgrey"
-            visible: !sidebar.isStored
-
-            property bool isExpanded: false
-
-            Column {
-                Row {
-                    spacing: 10
-
-                    IconImage {
-                        id: icon
-                        source: "qrc:/icons/Icons/CodiconChevronRight.svg"
-
-                        transform: Rotation {
-                            id: rotation1
-                            origin.x: icon.width / 2
-                            origin.y: icon.height / 2
-                            angle: 0 // 初始角度
-                        }
-                    }
-
-                    Text {
-                        width: sidebar.width - 70
-                        height: 50
-                        text: LibName
-                        wrapMode: Text.WrapAnywhere
-                    }
-                }
-
-                 // 边栏内容
-                GridView {
-                    id: son
-                    visible: !sidebar.isStored
-                    width: sidebar.width - 20
-                    cellWidth: 80 // 设置每个单元格的宽度为视图宽度的一半
-                    cellHeight: 80 // 您可以根据需要设置单元格的高度
-                    clip: true
-                    z: 1
-                    
-                    model: Models
-                    
-                    delegate: Loader {
-                        width: 80;
-                        height: module.isExpanded ? 80 : 0
-
-                        source: "qrc:/dndkit/DndComp/DragComponent.qml"
-
-                        onLoaded: {
-                            item.paras = Paras
-                            item.compType = Type
-                            item.image = Icon
-                            item.hdata = Handlers
-                        }
-                    }
-                }
-            }
-
-            TapHandler {
-
-                onDoubleTapped: {
-                    if (!module.isExpanded) {
-                        rotation1.angle += 90
-                        module.isExpanded = true
-                        module.height = 50 + Math.ceil(Models.rowCount() / 2) * 80
-                        son.height = Math.ceil(Models.rowCount() / 2) * 80
-                    } else {
-                        rotation1.angle -= 90
-                        module.isExpanded = false
-                        module.height = 50
-                        son.height = 0
-                    }
-                }
-            }
         }
     }
 }
