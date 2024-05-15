@@ -2,10 +2,12 @@
 import QtQuick.Controls
 import Ai4Energy 1.0
 
-Item {
+Rectangle {
+    id: projectTree
     visible: true
 
     signal createItem(string name)
+    signal editItem(string name, int type)
 
     onCreateItem: name => {
         tree_model.createItem(name);
@@ -13,9 +15,6 @@ Item {
 
     TreeModel {
        id: tree_model
-       Component.onCompleted: {
-           //tree_model.resetItems();
-       }
     }
 
     TreeView {
@@ -26,7 +25,6 @@ Item {
 
         selectionModel: ItemSelectionModel {}
 
-        // The model needs to be a QAbstractItemModel
         model: tree_model
 
 
@@ -96,7 +94,7 @@ Item {
                         if (depth === 1) {
                             var p = tree_model.parent(treeView.index(row, column))
                             var pname = tree_model.data(p, 0)
-                            mainWindow.createAny(pname, treeView.index(row, column).row)
+                            projectTree.editItem(pname, treeView.index(row, column).row)
                         }
                     }
                 }

@@ -70,4 +70,7 @@
     <qresource prefix="/mainWindow">
         <file>main.qml</file>
     </qresource>
+    <qresource prefix="/logo">
+        <file>Logo/logo.svg</file>
+    </qresource>
 </RCC>

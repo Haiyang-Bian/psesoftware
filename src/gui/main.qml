@@ -11,10 +11,8 @@ ApplicationWindow {
     width: 1400
     height: 750
     visible: true
-    title: "gAPHD ModelEditor 0.3.0"
+    title: "gAPHD ModelEditor 0.4.0"
     visibility: "Maximized"
-
-    signal createAny(var name, int path)
 
     menuBar: Menus { id: menu }
 
@@ -25,15 +23,42 @@ ApplicationWindow {
 
         Rectangle {
             id: projectList
+
             SplitView.minimumWidth: 200
             SplitView.preferredWidth: 200 
             height: parent.height
+            border {
+                color: "black"
+                width: 1
+            }
+            color: "white"
 
-            color: "#D8BFD8"
+            Rectangle {
+                id: titleBar
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: parent.top
+                }
+                height: 50
+                color: "#B266FF"
+                border {
+                    color: "black"
+                    width: 2
+                }
+                Text {
+                    anchors.centerIn: parent
+                    text: "项目树"
+                }
+            }
         
             ScrollView {
-                width: parent.width
-                height: parent.height
+                anchors {
+                    bottom: parent.bottom
+                    left: parent.left
+                    right: parent.right
+                    top: titleBar.bottom
+                }
                 clip: true
 
                 ScrollBar.vertical: ScrollBar {
@@ -46,8 +71,7 @@ ApplicationWindow {
 
                 FileTree {
                     id: tree
-                    width: projectList.width
-                    height: projectList.height
+                    anchors.fill: parent
                 }
             }
         }
@@ -55,6 +79,10 @@ ApplicationWindow {
         Rectangle {
             id: workSpace
             color: "white"
+            border {
+                color: "black"
+                width: 1
+            }
             SplitView.minimumWidth: 100
             SplitView.maximumWidth: mainWindow.width - 200
             SplitView.fillWidth: true
@@ -148,110 +176,7 @@ ApplicationWindow {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            source: "file:///D:/Work/leetcode/QtModelBuilder/logo.svg"
-        }
-    }
-
-    onCreateAny:(name, path) => {
-        let index = isPageExist(name, path)
-        switch(path) {
-        case 0:
-            if (index > -1)
-                projectWindows.currentIndex = index + 1
-            else {
-                var win = Qt.createComponent("qrc:/variable/Variables/Vars.qml")
-                if (win.status !== Component.Ready){
-                    console.debug(win.errorString())
-                }
-                var vars = win.createObject(workSpace,
-                    {
-                        "width": workSpace.width,
-                        "height": workSpace.height,
-                        "varTypes": Controler.getVarTypes(name)
-                    }
-                )
-                headers.append({
-                    "title": "变量类型编辑(" + name + ")",
-                    "pname": name,
-                    "type": 0
-                })
-                pages.append(vars)
-                projectWindows.currentIndex = pages.count - 1
-            }
-            break
-        case 1:
-            if (index > -1)
-                projectWindows.currentIndex = index + 1
-            else {
-                var win = Qt.createComponent("qrc:/connection/Connection/Conns.qml")
-                if (win.status !== Component.Ready){
-                    console.debug(win.errorString())
-                }
-                var conns = win.createObject(workSpace,
-                    {
-                        "width": workSpace.width,
-                        "height": workSpace.height,
-                        "typeList": Controler.getConnTypes(name),
-                        "pname": name
-                    }
-                )
-                headers.append({
-                    "title": "连接类型编辑(" + name + ")",
-                    "pname": name,
-                    "type": 1
-                })
-                pages.append(conns)
-                projectWindows.currentIndex = pages.count - 1
-            }
-            break
-        case 2:
-            if (index > -1)
-                projectWindows.currentIndex = index + 1
-            else {
-                var win = Qt.createComponent("qrc:/model/Model/ModelList.qml")
-                if (win.status !== Component.Ready){
-                    console.debug(win.errorString())
-                }
-                var models = win.createObject(workSpace,
-                    {
-                        "width": workSpace.width,
-                        "height": workSpace.height,
-                        "models":  Controler.getModels(name),
-                        "pname": name
-                    }
-                )
-                headers.append({
-                    "title": "模型编辑(" + name + ")",
-                    "pname": name,
-                    "type": 2
-                })
-                pages.append(models)
-                projectWindows.currentIndex = pages.count - 1
-            }
-            break
-        case 3:
-            if (index > -1)
-                projectWindows.currentIndex = index + 1
-            else {
-                var win = Qt.createComponent("qrc:/system/System/ProcessList.qml")
-                if (win.status !== Component.Ready){
-                    console.debug(win.errorString())
-                }
-                var systems = win.createObject(workSpace,
-                    {
-                        "width": workSpace.width,
-                        "height": workSpace.height,
-                    }
-                )
-                headers.append({
-                    "title": "流程编辑(" + name + ")",
-                    "pname": name,
-                    "type": 3
-                })
-                pages.append(systems)
-                projectWindows.currentIndex = pages.count - 1
-            }
-            break
+            source: "qrc:/logo/Logo/logo.svg"
         }
     }
 
@@ -265,7 +190,10 @@ ApplicationWindow {
         property int type: 0
 
         onLoaded: {
-            loader.item.closing.connect(handleClosed)
+            loader.item.closing.connect(()=>{
+                item.source = ""
+                item.active = false
+            })
             switch(loader.type) {
             case 3:
                 loader.item.pname = loader.pname
@@ -284,7 +212,16 @@ ApplicationWindow {
         source: "" // 设置子窗口的源文件
 
         onLoaded: {
-            menuLoader.item.closing.connect(handleClosed)
+            if (item.creatProject !== undefined){
+                item.creatProject.connect(name => {
+                    tree.createItem(name)
+                    Controler.creatProject(name)
+                })
+            }
+            menuLoader.item.closing.connect(()=>{
+                menuLoader.source = ""
+                menuLoader.active = false
+            })
         }
     }
 
@@ -299,14 +236,134 @@ ApplicationWindow {
         onRejected: {
             msgBox.source = ""
             mainWindow.closeFlag = false
-            mainWindow.closeType = 0
+        }
+    }
+
+    Connections {
+        target: tree
+        function onEditItem(name, type) {
+            let path = type
+            let index = isPageExist(name, path)
+            switch(path) {
+            case 0:
+                if (index > -1)
+                    projectWindows.currentIndex = index + 1
+                else {
+                    var win = Qt.createComponent("qrc:/variable/Variables/Vars.qml")
+                    if (win.status !== Component.Ready){
+                        console.debug(win.errorString())
+                    }
+                    var vars = win.createObject(workSpace,
+                        {
+                            "width": workSpace.width,
+                            "height": workSpace.height,
+                            "varTypes": Controler.getVarTypes(name)
+                        }
+                    )
+                    headers.append({
+                        "title": "变量类型编辑(" + name + ")",
+                        "pname": name,
+                        "type": 0
+                    })
+                    pages.append(vars)
+                    projectWindows.currentIndex = pages.count - 1
+                }
+                break
+            case 1:
+                if (index > -1)
+                    projectWindows.currentIndex = index + 1
+                else {
+                    var win = Qt.createComponent("qrc:/connection/Connection/Conns.qml")
+                    if (win.status !== Component.Ready){
+                        console.debug(win.errorString())
+                    }
+                    var conns = win.createObject(workSpace,
+                        {
+                            "width": workSpace.width,
+                            "height": workSpace.height,
+                            "typeList": Controler.getConnTypes(name),
+                            "pname": name
+                        }
+                    )
+                    headers.append({
+                        "title": "连接类型编辑(" + name + ")",
+                        "pname": name,
+                        "type": 1
+                    })
+                    pages.append(conns)
+                    projectWindows.currentIndex = pages.count - 1
+                }
+                break
+            case 2:
+                if (index > -1)
+                    projectWindows.currentIndex = index + 1
+                else {
+                    var win = Qt.createComponent("qrc:/model/Model/ModelList.qml")
+                    if (win.status !== Component.Ready){
+                        console.debug(win.errorString())
+                    }
+                    var models = win.createObject(workSpace,
+                        {
+                            "width": workSpace.width,
+                            "height": workSpace.height,
+                            "models":  Controler.getModels(name),
+                            "pname": name
+                        }
+                    )
+                    headers.append({
+                        "title": "模型编辑(" + name + ")",
+                        "pname": name,
+                        "type": 2
+                    })
+                    pages.append(models)
+                    projectWindows.currentIndex = pages.count - 1
+                }
+                break
+            case 3:
+                if (index > -1)
+                    projectWindows.currentIndex = index + 1
+                else {
+                    var win = Qt.createComponent("qrc:/system/System/ProcessList.qml")
+                    if (win.status !== Component.Ready){
+                        console.debug(win.errorString())
+                    }
+                    var systems = win.createObject(workSpace,
+                        {
+                            "width": workSpace.width,
+                            "height": workSpace.height,
+                        }
+                    )
+                    headers.append({
+                        "title": "流程编辑(" + name + ")",
+                        "pname": name,
+                        "type": 3
+                    })
+                    pages.append(systems)
+                    projectWindows.currentIndex = pages.count - 1
+                }
+                break
+            }
         }
     }
 
     Connections {
         target: menu
+        function onCreatProject() {
+            menuLoader.source = "qrc:/mainmenu/MainMenu/ProjectCreate.qml"
+            menuLoader.active = true
+        }
         function onOpenProject() {
             loadFile.open()
+        }
+        function onOpenLibBrowser() {
+            menuLoader.source = "qrc:/system/System/LibBrowser.qml"
+            menuLoader.active = true
+        }
+        function onSaveAll() {
+            saveFile.open()
+        }
+        function onExit() {
+            close()
         }
     }
 
@@ -328,50 +385,38 @@ ApplicationWindow {
         source: "/mainmenu/MainMenu/MyMessage.qml" 
 
         onLoaded: {
-            msgBox.item.closing.connect(closeProject)
+            item.save.connect(()=>{
+                mainWindow.closeFlag = true
+                saveFile.open()
+            })
+            item.dicored.connect(()=>{
+                mainWindow.closeFlag = false
+                msgBox.source = ""
+                msgBox.active = false
+            })
+            item.notSave.connect(()=>{
+                mainWindow.closeFlag = true
+                mainWindow.close()
+            })
+            item.closing.connect(()=>{
+                msgBox.source = ""
+                msgBox.active = false
+            })
         }
     }
 
 
     property bool closeFlag: false
-    property int closeType: 0
 
     onClosing: close => {
         // 此处程序会异步执行,因而有些复杂
         close.accepted = mainWindow.closeFlag
         if (!mainWindow.closeFlag) {
-            msgBox.source = "/mainmenu/MainMenu/MyMessage.qml" 
+            msgBox.source = "qrc:/mainmenu/MainMenu/MyMessage.qml" 
             msgBox.active = true
         }
     }
 
-    function closeProject() {
-        switch (closeType) {
-        case 1:
-            mainWindow.closeFlag = true
-            saveFile.open()
-            break;
-        case 2:
-            mainWindow.closeFlag = false
-            msgBox.source = ""
-            msgBox.active = false
-            break;
-        case 3:
-            mainWindow.closeFlag = true
-            mainWindow.close()
-            break;
-        }
-    }
-
-    // 此函数释放子窗口资源,使其关闭后还可打开
-    function handleClosed() {
-        loader.source = ""
-        loader.pname = ""
-        // 此行尤为重要,如不设置false,则Loader不会瞬时重置
-        loader.active = false
-        menuLoader.source = ""
-        menuLoader.active = false
-    }
     function isPageExist(pname, type) {
         for (let i = 0; i < headers.count; ++i) {
             let p = headers.get(i)

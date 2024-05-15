@@ -1,10 +1,9 @@
 ﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Window
-import QtQuick.Layouts
 
 Window {
-    id: w
+    id: projectCreator
     visible: true
 	width: 300
 	height: 200
@@ -17,29 +16,31 @@ Window {
     minimumHeight: 200
     maximumHeight: 200
 
-	RowLayout {
-        spacing: 20
-        Layout.topMargin: 50
+    signal creatProject(string name)
+
+	Rectangle {
+        anchors.fill: parent
+        anchors.margins: 2
 
         Label {
+            anchors.left: parent.left
+            anchors.leftMargin: 20
+            anchors.top: parent.top
+            anchors.topMargin: 50
             text: "请输入项目名称:"
         }
         TextField {
             id: t1
-            placeholderText: qsTr("")
-        }
-    }
-
-    Button {
-        width: 100
-        height: 50
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-        text: "确定"
-        onClicked: {
-            tree.createItem(t1.text)
-            Controler.creatProject(t1.text)
-            w.close()
+            anchors.left: parent.left
+            anchors.leftMargin: 20
+            anchors.top: parent.top
+            anchors.topMargin: 100
+            height: 50
+            placeholderText: qsTr("新的项目")
+            onAccepted: {
+                projectCreator.creatProject(text)
+                projectCreator.close()
+            }
         }
     }
 }

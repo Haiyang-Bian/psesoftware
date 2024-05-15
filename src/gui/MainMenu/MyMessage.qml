@@ -17,25 +17,47 @@ Window {
     minimumHeight: 200
     maximumHeight: 200
 
-    Column {
-        spacing: 20
+    signal save()
+    signal dicored()
+    signal notSave()
 
-        Text {
-            id: tips
-            text: qsTr("是否保存项目?")
+    onClosing: {
+        msg.dicored()
+    }
+
+    Column {
+        anchors.fill: parent
+        spacing: 5
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.margins: 3
+            radius: 5
+            border.color: "black"
+            border.width: 1
+            height: parent.height - 60
+            Text {
+                id: tips
+                anchors.centerIn: parent
+                text: qsTr("是否保存项目?")
+            }
         }
 
         Row {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 50
             spacing: 20
 
             Button {
                 id: save
                 text: "保存"
-                width: 60
+                width: (parent.width - 60) / 3
                 height: 40
 
                 onClicked: {
-                    mainWindow.closeType = 1
+                    msg.save()
                     msg.close()
                 }
             }
@@ -43,11 +65,11 @@ Window {
             Button {
                 id: dicored
                 text: "取消"
-                width: 60
+                width: (parent.width - 60) / 3
                 height: 40
 
                 onClicked: {
-                    mainWindow.closeType = 2
+                    msg.dicored()
                     msg.close()
                 }
             }
@@ -55,11 +77,11 @@ Window {
             Button {
                 id: exit
                 text: "不保存"
-                width: 60
+                width: (parent.width - 60) / 3
                 height: 40
 
                 onClicked: {
-                    mainWindow.closeType = 3
+                    msg.notSave()
                     msg.close()
                 }
             }
