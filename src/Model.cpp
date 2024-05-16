@@ -20,6 +20,7 @@ QModelIndex ModelList::index(int row, int column, const QModelIndex& parent) con
         return QModelIndex();
     Model* parentItem = getItem(parent);
     auto childPtr = parentItem->subItems.at(row);
+    //qDebug() << (childPtr->row == row);
     if (childPtr) {
         return createIndex(row, column, childPtr);
     }
@@ -64,8 +65,10 @@ QVariant ModelList::data(const QModelIndex& index, int role) const
         role = Qt::UserRole + index.column();
     }
     switch (role) {
-    case NameRole: return item->name;
-    case TypeRole: return item->isFilter ? "Filter" : "Normal";
+    case NameRole:
+        return item->name;
+    case TypeRole: 
+        return item->isFilter ? "Filter" : "Normal";
     default: break;
     }
     return QVariant();
@@ -85,7 +88,7 @@ void ModelList::resetItems()
 {
     if (rootItem->subItems.isEmpty()) {
         beginResetModel();
-        Model* lv1{ new Model }, * l2{ new Model };
+        Model* lv1{ new Model };
         lv1->parentItem = rootItem;
         rootItem->subItems.append(lv1);
         lv1->row = 0;
@@ -107,20 +110,32 @@ Model* ModelList::getItem(const QModelIndex& idx) const
 
 void ModelList::createItem(QModelIndex order, bool isFilter, QString name) {
     Model* lv1{ new Model };
-    Model* father = getItem(order);
-    QQmlEngine::setObjectOwnership(&(lv1->dnd), QQmlEngine::CppOwnership);
-    beginInsertRows(order, this->rowCount(order), this->rowCount(order));
-    lv1->parentItem = father;
-    lv1->row = this->rowCount(order);
-    father->subItems << lv1;
     lv1->isFilter = isFilter;
     lv1->name = name;
-    endInsertRows();
+    if (!isFilter) {
+        QQmlEngine::setObjectOwnership(&(lv1->dnd), QQmlEngine::CppOwnership);
+    }
+    Model* item = getItem(order);
+    if (item->isFilter) {
+        beginInsertRows(order, this->rowCount(order), this->rowCount(order));
+        lv1->parentItem = item;
+        lv1->row = this->rowCount(order);
+        item->subItems.append(lv1);
+        endInsertRows();
+    }
+    else
+    {
+        QModelIndex f = parent(order);
+        Model* father = getItem(f);
+        beginInsertRows(f, this->rowCount(f), this->rowCount(f));
+        lv1->parentItem = father;
+        lv1->row = this->rowCount(f);
+        father->subItems.append(lv1);
+        endInsertRows();
+    }
 }
 
 void ModelList::removeItem(QModelIndex order) {
-    // 很遗憾这里不能使用QSharedPointer,否则会触发访问权限冲突的问题
-    // 我并没有找到解决方法
     beginRemoveRows(this->parent(order), order.row(), order.row());
     Model* father = getItem(parent(order));
     father->subItems[order.row()]->parentItem = nullptr;
@@ -189,11 +204,6 @@ void ModelList::createLib(QString name) {
     newLib->name = name;
     rootItem->subItems << newLib;
     endInsertRows();
-}
-
-void ModelList::changeName(QModelIndex obj, QString name) {
-    Model* item = getItem(obj);
-    item->name = name;
 }
 
 

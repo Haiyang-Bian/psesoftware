@@ -236,7 +236,8 @@ ApplicationWindow {
         visible: false
         onAccepted: {
             Controler.saveProject(folder)
-            mainWindow.close()
+            if (mainWindow.closeFlag)
+                mainWindow.close()
         }
         onRejected: {
             msgBox.source = ""

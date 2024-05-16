@@ -45,7 +45,6 @@ public:
         this->rootItem = tmd.rootItem;
     }
 
-    //需要重写的基类接口
     QModelIndex index(int row, int column,
         const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& index) const override;
@@ -56,14 +55,21 @@ public:
     inline ModelList& operator=(const ModelList& cao) {
         return const_cast<ModelList&>(cao);
     }
-
-    //初始化数据
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override {
+        Model* item = getItem(index);
+        if (!item)
+            return false;
+        item->name = value.toString();
+        QList<int> roles{ NameRole };
+        emit dataChanged(index, index, roles);
+        return true;
+    }
+    
     Q_INVOKABLE void resetItems();
     Q_INVOKABLE void createItem(QModelIndex order, bool isFilter, QString name = "");
     Q_INVOKABLE void removeItem(QModelIndex order);
     Q_INVOKABLE void moveItem(QModelIndex order, QModelIndex target);
     Q_INVOKABLE void createLib(QString name);
-    Q_INVOKABLE void changeName(QModelIndex obj, QString name);
 
 public:
     Q_INVOKABLE inline void rename(QModelIndex index, QString name) {

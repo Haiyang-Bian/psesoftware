@@ -19,6 +19,13 @@ Rectangle {
            treeModel.resetItems();
     }
 
+    Connections {
+        target: treeModel
+        function onDataChanged() {
+            console.log("傻逼!")
+        }
+    }
+
     TreeView {
         id: treeView
         anchors {
@@ -35,7 +42,6 @@ Rectangle {
         selectionModel: ItemSelectionModel {}
 
         model: treeModel
-
 
         delegate: Item {
             implicitWidth: padding + label.x + label.implicitWidth + padding
@@ -108,9 +114,8 @@ Rectangle {
                     placeholderText: name
 
                     onAccepted: {
-                        treeModel.changeName(treeView.index(row, 0), text)
-                        root.renameModel(treeView.index(row, 0), text)
-                        label.text = text
+                        treeModel.setData(treeView.index(row, column), text)
+                        root.renameModel(treeView.index(row, column), text)
                         focus = false
                         visible = false
                         label.visible = true
@@ -174,7 +179,7 @@ Rectangle {
                 MenuItem {
                     text: "新建模型";
                     onTriggered: {
-                        treeModel.createItem(treeView.index(row, column), false, "NewModel")
+                        treeModel.createItem(treeView.index(row, column), false, "NewModel" + row)
                     }
                 }
                 MenuItem {
