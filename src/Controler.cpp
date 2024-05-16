@@ -1,5 +1,8 @@
 #include "../include/Controler.h"
 #include <qurl.h>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <qurlquery.h>
 #include <qfile.h>
 #include <qjsondocument.h>
 #include <iostream>
@@ -105,28 +108,29 @@ void Controler::selectLibs(QVariantList libs) {
 }
 
 void Controler::generateSimulation(QString name, QString process) {
-    QFile file("D:/Work/leetcode/QtModelBuilder/WorkPath/tempfile.aife");
-    QJsonObject system;
-    system.insert("Packages", [this]() -> QJsonArray {
-        QJsonArray ps;
-        for (QString p : this->libList)
-            ps.append(p);
-        return ps;
-        }());
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qWarning("无法打开文件进行写入");
-    }
-    // 创建一个QTextStream对象，用于写入文本到文件
-    QTextStream out(&file);
-
-    // 使用QTextStream写入文本
-    out << QJsonDocument(system).toJson(QJsonDocument::Indented);
-    // 关闭文件
-    file.close();
+    QUrl url("http://localhost:8080/simulation");
+    QUrlQuery query;
+    query.addQueryItem("type", "analysis_system");
+    url.setQuery(query);
+    QNetworkRequest request(url);
+    QJsonObject json = projects.value(name).system.value(process).systemData();
+    QNetworkReply* reply = netWorker.post(request, QJsonDocument(json).toJson().constData());
+    connect(&netWorker, &QNetworkAccessManager::finished, this, [this](QNetworkReply* r) {
+        QJsonObject res = QJsonDocument::fromJson(r->readAll()).object();
+        emit this->analysisEnd(res);
+        });
 }
 
 void Controler::simulation(QJsonObject settings)
 {
-    QJsonDocument doc(settings);
-    QString jsonString = doc.toJson(QJsonDocument::Compact);
+    QUrl url("http://localhost:8080/simulation");
+    QUrlQuery query;
+    query.addQueryItem("type", "calculation");
+    url.setQuery(query);
+    QNetworkRequest request(url);
+    QNetworkReply* reply = netWorker.post(request, QJsonDocument(settings).toJson().constData());
+    connect(&netWorker, &QNetworkAccessManager::finished, this, [this](QNetworkReply* r) {
+        QJsonObject res = QJsonDocument::fromJson(r->readAll()).object();
+        emit simulationEnd(res);
+        });
 }

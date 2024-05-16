@@ -208,8 +208,7 @@ void ModelList::createLib(QString name) {
 
 
 void ModelList::insertDB(QVariant dataBase) {
-	QSqlDatabase db = dataBase.value<QSqlDatabase>();
-	QSqlQuery query0(db), query1(db), query2(db), query3(db), query4(db);
+	
 }
 
 QJsonArray ModelList::getData(QModelIndex idx, QString t)

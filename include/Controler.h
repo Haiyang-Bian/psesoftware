@@ -2,7 +2,6 @@
 
 #include <QObject>
 #include <qnetworkaccessmanager.h>
-#include <qsqldatabase.h>
 #include <qmetatype.h>
 #include "Model.h"
 #include "ConnectionType.h"
@@ -93,6 +92,7 @@ public:
 	Q_INVOKABLE void simulation(QJsonObject settings);
 
 signals:
+	void analysisEnd(QJsonObject res);
 	// 仿真结束后告诉UI进行绘图
 	void simulationEnd(QJsonObject ans);
 
@@ -104,5 +104,5 @@ private:
 	// 库里的组件列表
 	LibTreeModel compList;
 	// HTTP
-	QNetworkAccessManager* netWorker;
+	QNetworkAccessManager netWorker;
 };
