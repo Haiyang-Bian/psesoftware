@@ -2,6 +2,7 @@
 #include <QAbstractItemModel>
 #include <qqml.h>
 #include <QDomDocument>
+#include <qqmlengine.h>
 #include "DndControler.h"
 
 //自定义树节点
@@ -276,7 +277,9 @@ public:
                     mp->subItems.append(n);
                     if (name.isEmpty()) {
                         n->data = model;
+                        n->isFilter = false;
                         n->dnd = model.value("SubSystems").toObject();
+                        QQmlEngine::setObjectOwnership(&(n->dnd), QQmlEngine::CppOwnership);
                         break;
                     }
                     else

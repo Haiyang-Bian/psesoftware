@@ -42,7 +42,7 @@ protected:
 public slots:
     //对数据的基本操作
     //初始化数据
-    Q_INVOKABLE void setVariable(QJsonArray vars); 
+    Q_INVOKABLE void setVariable(const QJsonArray& vars); 
     //添加数据
     Q_INVOKABLE inline void appendType(QJsonObject vars) {
         beginInsertRows(QModelIndex(), varTypes.size(), varTypes.size());

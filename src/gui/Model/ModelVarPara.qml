@@ -6,6 +6,7 @@ Rectangle {
     id: varAndPara
     visible: true
     
+    property var dataTypes: Controler.getVarTypes(modelBuilder.pname)
     
     Layout.margins: 2
     Layout.fillHeight: true
@@ -371,8 +372,11 @@ Rectangle {
                     top: parent.top
                     bottom: parent.bottom
                 }
+                textRole: "name"
+                valueRole: "name"
                 width: (parent.width - 50) / 7
                 currentIndex: 0
+                model: varAndPara.dataTypes
 
                 onAccepted: {
                     setVar(index)
@@ -499,8 +503,11 @@ Rectangle {
                     top: parent.top
                     bottom: parent.bottom
                 }
+                textRole: "name"
+                valueRole: "name"
                 width: (parent.width - 50) / 6
                 currentIndex: 0
+                model: varAndPara.dataTypes
 
                 onAccepted: {
                     setPara(index)

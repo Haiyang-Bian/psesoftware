@@ -215,7 +215,6 @@ Rectangle {
         Rectangle {
             width: parent.width
             height: 50
-            color: tap.tapped ? "blue" : "white"
             Text {
                 id: t1
                 anchors.left: parent.left

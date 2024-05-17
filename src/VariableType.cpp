@@ -50,10 +50,13 @@ QHash<int, QByteArray> VariableType::roleNames() const {
 }
 
 //注入初始数据
-void VariableType::setVariable(const QJsonArray VariableJsonArray) {
-    beginResetModel();  //重置数据必须遵循的规则，表示开始
-    
-    endResetModel(); //重置数据必须遵循的规则，表示结束
+void VariableType::setVariable(const QJsonArray& vars) {
+    beginResetModel();  
+    for (auto v : vars) {
+        QJsonObject vv = v.toObject();
+        varTypes.append(vv);
+    }
+    endResetModel(); 
 }
 
 void VariableType::saveTypes(QUrl path) {
@@ -131,7 +134,8 @@ int VariableType::getIdByType(QString type) {
 QJsonArray VariableType::saveTypes() {
     QJsonArray ans;
     for (QJsonObject type : varTypes) {
-        ans.append(type);
+        if (!type.contains("isExportable") || type.value("isExportable").toBool())
+            ans.append(type);
     }
     return ans;
 }
@@ -150,6 +154,7 @@ void VariableType::loadTypesFromDataBase() {
             beginInsertRows(QModelIndex(), 0, arr.size() - 1);
             for (auto v : arr) {
                 QJsonObject query = v.toObject();
+                query.insert("isExportable", false);
                 varTypes.append(query);
                 standarType.append(query);
             }

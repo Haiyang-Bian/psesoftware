@@ -195,7 +195,8 @@ Rectangle {
                     {
                         "width": modelEditSpace.width,
                         "height": modelEditSpace.height,
-                        "model": index
+                        "model": index,
+                        "pname": pname
                     }
                 )
                 headers.append({

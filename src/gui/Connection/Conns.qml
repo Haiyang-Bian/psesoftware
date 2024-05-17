@@ -149,12 +149,32 @@ Rectangle {
                 border.width: 2
 
                 Text {
+                    id: label
                     anchors {
                         fill: parent
                         leftMargin: 5
                         topMargin: 5
                     }
                     text: Type
+                }
+
+                TextField {
+                    id: labelInput
+                    anchors {
+                        fill: parent
+                    }
+                    focus: false
+                    visible: false
+                    anchors.verticalCenter: parent.verticalCenter
+                    clip: true
+                    placeholderText: Type
+
+                    onAccepted: {
+                        connWindow.typeList.rename(index, text)
+                        focus = false
+                        visible = false
+                        label.visible = true
+                    }
                 }
 
                 TapHandler {
@@ -176,15 +196,20 @@ Rectangle {
                 Menu {
                     id: contextMenu
 
-                    Repeater {
-                        model: ["删除", "重命名"]
-                    
-                        delegate: MenuItem {
-                            text: modelData
-                            
-                            onTriggered: {
-                                menuEvents(index, Type)
-                            }
+                    MenuItem {
+                        text: "删除"
+                        
+                        onTriggered: {
+                            connWindow.typeList.editType({"Type": Type})
+                        }
+                    }
+                    MenuItem {
+                        text: "重命名"
+                        
+                        onTriggered: {
+                            label.visible = false
+                            labelInput.visible = true
+                            labelInput.forceActiveFocus()
                         }
                     }
                 }
@@ -213,14 +238,6 @@ Rectangle {
             break;
         case 1:
             typeList.insertDB()
-            break;
-        }
-    }
-
-    function menuEvents(type, item){
-        switch(type){
-        case 0:
-            connWindow.typeList.editType({"Type": item})
             break;
         }
     }

@@ -10,9 +10,10 @@ public:
     Port(){}
     Port(QJsonObject& p) {
         des = p.value("Description").toString();
-        for (auto v : p.value("Variables").toArray()) {
-            QJsonObject var = v.toObject();
-            vars.insert(var.value("Name").toString(), var);
+        QJsonObject vars = p.value("Variables").toObject();
+        for (QString v : vars.keys()) {
+            QJsonObject var = vars.value(v).toObject();
+            this->vars.insert(v, var);
         }
     }
 
@@ -52,10 +53,23 @@ public:
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+
+    QModelIndex index(int row, int column = 0, const QModelIndex& parent = QModelIndex()) const override {
+        return createIndex(row, column);
+    }
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
 public slots:
+
+    Q_INVOKABLE void rename(int index, QString newName) {
+        QString name = typeList.value(index);
+        Port old = portList.value(name);
+        portList.remove(name);
+        portList.insert(newName, old);
+        typeList[index] = newName;
+        emit dataChanged(this->index(index), this->index(index));
+    }
     
     Q_INVOKABLE inline void removeType(QString name) {
         typeList.removeAt(typeList.indexOf(name));
@@ -75,8 +89,8 @@ public slots:
         }
         else
         {
-            beginInsertRows(QModelIndex(), 0, 0);
-            typeList.prepend(name);
+            beginInsertRows(QModelIndex(), typeList.size(), typeList.size());
+            typeList.append(name);
             portList.insert(name, obj);
             endInsertRows();
         }
@@ -96,16 +110,14 @@ public slots:
     void loadTypes(const QJsonArray& ports) {
         for (auto p : ports) {
             QJsonObject port = p.toObject();
-            this->editType(port);
+            QString type = port.value("Type").toString();
+            typeList.append(type);
+            portList.insert(type, port);
         }
     }
     Q_INVOKABLE void editPortVar(QString conn, QJsonObject data) {
-        qDebug() << data;
-        qDebug() << data.contains("Type");
         QString name = data.value("Name").toString();
         Port& p = portList[conn];
-        qDebug() << p.vars.contains(name);
-        qDebug() << data.keys().size();
         if (p.vars.contains(name)) {
             if (data.keys().size() == 1) {
                 p.vars.remove(name);
@@ -114,7 +126,6 @@ public slots:
             {
                 if (data.contains("Type")) {
                     p.vars[name].insert("Type", data["Type"]);
-                    qDebug() << p.vars[name];
                 }
                 else if(data.contains("ConnectType"))
                 {
@@ -129,6 +140,16 @@ public slots:
     }
     Q_INVOKABLE inline QString getVarType(QString conn, QString name) {
         return portList.value(conn).vars.value(name).value("Type").toString();
+    }
+    Q_INVOKABLE inline QJsonArray getVarTypes(QString conn) {
+        qDebug() << conn;
+        QJsonArray arr;
+        const Port& port = portList.value(conn);
+        QMap<QString, QJsonObject>::const_iterator it;
+        for (it = port.vars.begin(); it != port.vars.end(); ++it) {
+            arr.append(*it);
+        }
+        return arr;
     }
     Q_INVOKABLE inline QList<QString> getTypeList() {
         return typeList;

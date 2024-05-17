@@ -84,7 +84,6 @@ Rectangle {
             }
 
             onEdit: (type, data) => {
-                console.log("youbingba")
                 let r = {}
                 switch(type){
                 case 0:
@@ -109,5 +108,19 @@ Rectangle {
 
     ListModel {
         id: varList
+    }
+
+    Component.onCompleted: {
+        let types = connWindow.typeList.getVarTypes(connList.type)
+        if (types.length !== 0){
+            for (let type of types){
+                varList.append({
+                    "Name": type.Name,
+                    "Type": type.Type,
+                    "ConnectType": type.ConnectType,
+                    "Description": type.Description
+                })
+            }
+        }
     }
 }

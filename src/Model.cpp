@@ -2,7 +2,6 @@
 #include <qimage.h>
 #include <qimagereader.h>
 #include <qbuffer.h>
-#include <qqmlengine.h>
 #include <qsqldatabase.h>
 #include <qsqlquery.h>
 #include <qsqlerror.h>
@@ -281,6 +280,7 @@ void ModelList::editData(QModelIndex idx, QJsonObject data, QString t)
         QJsonObject datas = d[t].toObject();
         datas.remove(name);
         d.insert(t, datas);
+        return;
     }
     if (d.contains(t)) {
         QJsonObject datas = d[t].toObject();

@@ -13,6 +13,7 @@ Rectangle {
     color: "#EAF3E0"
 
     property var model: undefined
+    property string pname: ""
 
     ColumnLayout {
         anchors.fill: parent
