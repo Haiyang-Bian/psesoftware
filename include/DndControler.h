@@ -329,6 +329,10 @@ public:
 	Q_INVOKABLE QJsonArray getEdges();
 	// 解算路径
 	QList<Point> generatePath(QString s, QString sh, QString t, QString th);
+	// 返回系统信息
+	bool hasNodes() {
+		return !getNode.isEmpty();
+	}
 
 	QJsonObject systemData() const {
 		QJsonObject nodes;

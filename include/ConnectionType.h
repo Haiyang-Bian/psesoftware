@@ -13,6 +13,8 @@ public:
         QJsonObject vars = p.value("Variables").toObject();
         for (QString v : vars.keys()) {
             QJsonObject var = vars.value(v).toObject();
+            if (var.contains("Name"))
+                var.remove("Name");
             this->vars.insert(v, var);
         }
     }
@@ -138,22 +140,30 @@ public slots:
             p.vars.insert(name, data);
         }
     }
+
     Q_INVOKABLE inline QString getVarType(QString conn, QString name) {
         return portList.value(conn).vars.value(name).value("Type").toString();
     }
+
     Q_INVOKABLE inline QJsonArray getVarTypes(QString conn) {
-        qDebug() << conn;
         QJsonArray arr;
         const Port& port = portList.value(conn);
         QMap<QString, QJsonObject>::const_iterator it;
         for (it = port.vars.begin(); it != port.vars.end(); ++it) {
-            arr.append(*it);
+            QJsonObject var = *it;
+            var.insert("Name", it.key());
+            arr.append(var);
         }
         return arr;
     }
     Q_INVOKABLE inline QList<QString> getTypeList() {
         return typeList;
     }
+
+    Q_INVOKABLE int getIndexByType(QString type) {
+        return typeList.indexOf(type);
+    }
+
     // 数据库交互函数
     Q_INVOKABLE void insertDB();
     Q_INVOKABLE void loadConnsFromDB();

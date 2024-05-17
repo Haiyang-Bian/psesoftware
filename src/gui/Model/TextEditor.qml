@@ -145,7 +145,7 @@ Rectangle {
                     }
 
                     Component.onCompleted: {
-                        let eqs = modelWindow.models.getData(modelBuilder.model, "Equations")
+                        let eqs = modelWindow.models.getEqsOrDes(modelBuilder.model, "Equations")
                         textEdit.text = eqs
                     }
                 }

@@ -100,8 +100,7 @@ public:
                     n->row = mp->subItems.size();
                     mp->subItems.append(n);
                     endInsertRows();
-                    if (name.isEmpty()) {
-                        
+                    if (name.isEmpty()) {                       
                         break;
                     }
                     else
@@ -119,8 +118,8 @@ public:
     }
 
     void loadLibs(const QStringList& libs) {
-        QUrl url("http://localhost:8080/models");
         for (QString lib : libs) {
+            QUrl url("http://localhost:8080/models");
             QUrlQuery query(url);
             query.addQueryItem("libName", lib);
             url.setQuery(query);
@@ -202,13 +201,17 @@ public:
         rootItem->subItems.removeAt(index);
     }
 
+    void clear() {
+        deleteNodes(rootItem);
+    }
+
 private:
     LibModel* getItem(const QModelIndex& idx) const;
 
 private:
     //根节点
     LibModel* rootItem;
-
+    // 网络
     QNetworkAccessManager netWorker;
 };
 

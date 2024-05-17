@@ -309,3 +309,14 @@ void ModelList::editPorts(QModelIndex idx, QJsonArray data)
 		model->data["Ports"].toObject().insert(name, port);
 	}
 }
+
+void ModelList::rnameData(QModelIndex idx, QString name, QString newName, QString t)
+{
+    Model* m = type(idx);
+    QJsonObject& d = m->data;
+    QJsonObject datas = d[t].toObject();
+    QJsonObject data = datas.value(name).toObject();
+    datas.remove(name);
+    datas.insert(newName, data);
+    d.insert(t, datas);
+}

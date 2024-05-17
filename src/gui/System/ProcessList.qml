@@ -126,6 +126,17 @@ Rectangle {
         id: systems
     }
 
+    Component.onCompleted: {
+        let sys = Controler.getSystems(sysWindow.pname)
+        if (sys.length > 0){
+            for (let name of sys) {
+                systems.append({
+                    "name": name
+                })
+            }
+        }
+    }
+
     Component {
         id: mainList
         Rectangle {
@@ -136,9 +147,6 @@ Rectangle {
             }
             height: 50
             
-            property bool vselected: false
-
-            color: vselected ? "blue" : "white"
             Text {
                 text: name
             }
@@ -175,21 +183,19 @@ Rectangle {
         anchors.fill: parent
         source: "" // 设置子窗口的源文件
         onLoaded: {
-            loader1.item.closing.connect(handleClosed1)
             loader1.item.confirmCreation.connect(name => {
                 sysWindow.sysname = name
+                Controler.createSystem(sysWindow.pname, name)
                 systems.append({
                     "name": name
                 })
                 modelCreate()
+                loader1.source = ""
+                loader1.active = false
             })
         }
     }
 
-    function handleClosed1() {
-        loader1.source = ""
-        loader1.active = false
-    }
     function editorClose() {
         editorLoader.source = ""
         editorLoader.active = false

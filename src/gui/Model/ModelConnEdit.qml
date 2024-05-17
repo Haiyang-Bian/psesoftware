@@ -20,6 +20,8 @@ Window {
 
     signal createConn(var data)
 
+    property var connTypes: Controler.getConnTypes(modelWindow.pname)
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 20
@@ -41,10 +43,14 @@ Window {
             }
             ComboBox {
                 id: typeInput
-                textRole: "type"
-                valueRole: "type"
+                textRole: "Type"
+                valueRole: "Type"
                 Layout.fillWidth: true
-                model: Controler.getConnTypes(modelWindow.pname)
+                model: connTypes
+
+                Component.onCompleted: {
+                    currentIndex = connTypes.getIndexByType(Type)
+                }
             }
         }
 

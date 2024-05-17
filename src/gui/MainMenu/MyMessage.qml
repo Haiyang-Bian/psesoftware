@@ -58,7 +58,6 @@ Window {
 
                 onClicked: {
                     msg.save()
-                    msg.close()
                 }
             }
 

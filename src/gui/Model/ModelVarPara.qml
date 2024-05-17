@@ -27,10 +27,10 @@ Rectangle {
                     "Name": v.Name,
                     "Type": v.Type,
                     "Unit": v.Unit === undefined ? "" : v.Unit,
-                    "Min": v.Min === undefined ? "" : v.Min,
-                    "Max": v.Max === undefined ? "" : v.Max,
-                    "Value": v.Value === undefined ? "" : 0,
-                    "Number": v.Number === undefined ? "" : 1
+                    "Min": v.Min === undefined ? "-Inf" : v.Min,
+                    "Max": v.Max === undefined ? "Inf" : v.Max,
+                    "Value": v.Value === undefined ? "0" : v.Value,
+                    "Number": v.Number === undefined ? "1" : v.Number
                 })
             })
         }
@@ -40,11 +40,9 @@ Rectangle {
                     "Name": p.Name,
                     "Type": p.Type,
                     "Unit": p.Unit === undefined ? "" : p.Unit,
-                    "Min": p.Min === undefined ? "" : p.Min,
-                    "Max": p.Max === undefined ? "" : p.Max,
                     "Value": p.Value,
                     "Gui": p.Gui,
-                    "Number": p.Number === undefined ? "" : 1
+                    "Number": p.Number === undefined ? "1" : p.Number
                 })
             })
         }
@@ -342,7 +340,7 @@ Rectangle {
             onSetVar: i => {
                 let data = {
                     "Name": t1.text,
-                    "Type": t2.currentRole,
+                    "Type": t2.currentValue,
                     "Unit": t3.text,
                     "Value": t4.text,
                     "Min": t5.text,
@@ -363,7 +361,12 @@ Rectangle {
                 placeholderText: Name
                 placeholderTextColor: "black"
                 onAccepted: {
-                    setVar(index)
+                    modelWindow.models.rnameData(modelBuilder.model, Name, text, "Variables")
+                    varList[index].Name = text
+                }
+
+                Component.onCompleted: {
+                    text = Name
                 }
             }
             ComboBox {
@@ -375,11 +378,15 @@ Rectangle {
                 textRole: "name"
                 valueRole: "name"
                 width: (parent.width - 50) / 7
-                currentIndex: 0
+                
                 model: varAndPara.dataTypes
 
-                onAccepted: {
+                onActivated: index => {
                     setVar(index)
+                }
+
+                Component.onCompleted: {
+                    currentIndex = varAndPara.dataTypes.getIdByType(Type)
                 }
             }
             TextField {
@@ -394,6 +401,9 @@ Rectangle {
                 onAccepted: {
                     setVar(index)
                 }
+                Component.onCompleted: {
+                    text = Unit
+                }
             }
             TextField {
                 id: t4
@@ -406,6 +416,9 @@ Rectangle {
                 placeholderTextColor: "black"
                 onAccepted: {
                     setVar(index)
+                }
+                Component.onCompleted: {
+                    text = Value
                 }
             }
             TextField {
@@ -420,6 +433,9 @@ Rectangle {
                 onAccepted: {
                     setVar(index)
                 }
+                Component.onCompleted: {
+                    text = Min
+                }
             }
             TextField {
                 id: t6
@@ -433,6 +449,9 @@ Rectangle {
                 onAccepted: {
                     setVar(index)
                 }
+                Component.onCompleted: {
+                    text = Max
+                }
             }
             TextField {
                 id: t7
@@ -445,6 +464,9 @@ Rectangle {
                 placeholderTextColor: "black"
                 onAccepted: {
                     setVar(index)
+                }
+                Component.onCompleted: {
+                    text = Number
                 }
             }
             Button {
@@ -474,7 +496,7 @@ Rectangle {
             onSetPara: i => {
                 let data = {
                     "Name": t1.text,
-                    "Type": t2.currentRole,
+                    "Type": t2.currentValue,
                     "Unit": t3.text,
                     "Value": t4.text,
                     "Number": t5.text,
@@ -493,8 +515,14 @@ Rectangle {
                 width: (parent.width - 50) / 6
                 placeholderText: Name
                 placeholderTextColor: "black"
+
                 onAccepted: {
-                    setPara(index)
+                    modelWindow.models.rnameData(modelBuilder.model, Name, text, "Parameters")
+                    paraList[index].Name = text
+                }
+
+                Component.onCompleted: {
+                    text = Name
                 }
             }
             ComboBox {
@@ -506,11 +534,15 @@ Rectangle {
                 textRole: "name"
                 valueRole: "name"
                 width: (parent.width - 50) / 6
-                currentIndex: 0
+               
                 model: varAndPara.dataTypes
 
-                onAccepted: {
+                onActivated: {
                     setPara(index)
+                }
+
+                 Component.onCompleted: {
+                    currentIndex = varAndPara.dataTypes.getIdByType(Type)
                 }
             }
             TextField {
@@ -525,6 +557,9 @@ Rectangle {
                 onAccepted: {
                     setPara(index)
                 }
+                Component.onCompleted: {
+                    text = Unit
+                }
             }
             TextField {
                 id: t4
@@ -537,6 +572,9 @@ Rectangle {
                 placeholderTextColor: "black"
                 onAccepted: {
                     setPara(index)
+                }
+                Component.onCompleted: {
+                    text = Value
                 }
             }
             TextField {
@@ -551,6 +589,9 @@ Rectangle {
                 onAccepted: {
                     setPara(index)
                 }
+                Component.onCompleted: {
+                    text = Number
+                }
             }
             ComboBox {
                 id: t6
@@ -561,7 +602,8 @@ Rectangle {
                 width: (parent.width - 50) / 6
                 model: ["Text", "CheckBox", "Switch"]
                 currentIndex: Gui
-                onAccepted: {
+
+                onActivated: {
                     setPara(index)
                 }
             }
@@ -609,7 +651,12 @@ Rectangle {
                 placeholderText: Name
                 placeholderTextColor: "black"
                 onAccepted: {
-                    setSPara(index)
+                    modelWindow.models.rnameData(modelBuilder.model, Name, text, "StructuralParameters")
+                    sparaList[index].Name = text
+                }
+
+                Component.onCompleted: {
+                    text = Name
                 }
             }
             TextField {
@@ -621,8 +668,12 @@ Rectangle {
                 width: (parent.width - 50) / 3
                 placeholderText: Value
                 placeholderTextColor: "black"
+
                 onAccepted: {
                     setSPara(index)
+                }
+                Component.onCompleted: {
+                    text = Value
                 }
             }
             ComboBox {

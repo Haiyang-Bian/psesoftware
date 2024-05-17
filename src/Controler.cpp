@@ -87,8 +87,12 @@ void Controler::creatProject(QString name) {
     QQmlEngine::setObjectOwnership(&(projects[name].varTypes), QQmlEngine::CppOwnership);
 }
 
-QList<QString> Controler::getSystems(QString name) {
-    return projects.value(name).system.keys();
+QJsonArray Controler::getSystems(QString name) {
+    QJsonArray sys;
+    for (const QString s : projects.value(name).system.keys()) {
+        sys << s;
+    }
+    return sys;
 }
 
 void Controler::createSystem(QString name, QString sname){

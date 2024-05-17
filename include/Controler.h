@@ -67,14 +67,16 @@ public:
 	Q_INVOKABLE void loadProject(QUrl path);
 
 	// 流程(系统)管理
-	Q_INVOKABLE QList<QString> getSystems(QString name);
+	Q_INVOKABLE QJsonArray getSystems(QString name);
 	Q_INVOKABLE void createSystem(QString name, QString sname);
 	Q_INVOKABLE void removeSystem(QString name, QString sname);
 
 	// 组件库管理
 	Q_INVOKABLE void selectLibs(QVariantList libs);
 	Q_INVOKABLE void useLocalLibs(QString name) {
-		compList.useLocalModels(projects[name].models.getDndModels(), name);
+		QStringList libs = projects[name].models.getLibs();
+		for (QString lib : libs)
+			compList.useLocalModels(projects[name].models.getDndModels(), lib);
 	}
 
 	// 数据库交互

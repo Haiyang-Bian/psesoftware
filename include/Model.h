@@ -141,6 +141,8 @@ public:
         model->data["Equations"] = eqs;
     }
 
+    Q_INVOKABLE void rnameData(QModelIndex idx, QString name, QString newName, QString t);
+
     void getModelsJson(Model* model, QJsonArray& data) {
         if (model->subItems.isEmpty()) {
             Model* m = model;
@@ -153,7 +155,8 @@ public:
             QString typeName = name.join("_");
             QJsonObject modelData = model->data;
             modelData.insert("Type", typeName);
-            modelData.insert("SubSystems", model->dnd.systemData());
+            if (model->dnd.hasNodes())
+                modelData.insert("SubSystems", model->dnd.systemData());
             data.append(modelData);
         }
         else
@@ -278,7 +281,8 @@ public:
                     if (name.isEmpty()) {
                         n->data = model;
                         n->isFilter = false;
-                        n->dnd = model.value("SubSystems").toObject();
+                        if (model.contains("SubSystems"))
+                            n->dnd = model.value("SubSystems").toObject();
                         QQmlEngine::setObjectOwnership(&(n->dnd), QQmlEngine::CppOwnership);
                         break;
                     }
@@ -295,6 +299,14 @@ public:
         }
     }
 
+    QStringList getLibs() {
+        QStringList libs;
+        for (Model* lib : rootItem->subItems) {
+            libs.append(lib->name);
+        }
+        return libs;
+    }
+
     // 数据库交互函数
     Q_INVOKABLE void insertDB(QVariant dataBase);
 
@@ -305,5 +317,3 @@ private:
     //根节点
      Model* rootItem;
 };
-
-

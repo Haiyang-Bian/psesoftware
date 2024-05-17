@@ -240,8 +240,8 @@ ApplicationWindow {
                 mainWindow.close()
         }
         onRejected: {
-            msgBox.source = ""
             mainWindow.closeFlag = false
+            msgBox.source = ""
         }
     }
 
@@ -393,6 +393,8 @@ ApplicationWindow {
         onLoaded: {
             item.save.connect(()=>{
                 mainWindow.closeFlag = true
+                msgBox.source = ""
+                msgBox.active = false
                 saveFile.open()
             })
             item.dicored.connect(()=>{

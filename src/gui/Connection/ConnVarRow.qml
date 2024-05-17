@@ -56,7 +56,6 @@ Rectangle {
                 
                 onActivated: {
                     if (currentValue !== undefined) {
-                        console.log("为啥呀")
                         edit(1, currentValue)
                     }
                 }

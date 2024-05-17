@@ -63,7 +63,7 @@ Rectangle {
         id: update
         icon.source: "qrc:/icons/Icons/CodiconRefresh.svg"
         onTriggered: {
-           
+            Controler.useLocalLibs(sysWindow.pname)
         }
     }
 

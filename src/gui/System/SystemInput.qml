@@ -52,7 +52,6 @@ Window {
                 Layout.alignment: Qt.AlignBottom
                 onClicked: {
                     window.confirmCreation(sysName.text)
-                    Controler.createSystem(sysWindow.pname, sysName.text)
                     window.close()
                 }
             }
