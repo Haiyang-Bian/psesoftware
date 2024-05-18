@@ -229,9 +229,14 @@ public:
         }
     }
 
-    QJsonArray getDndModels() {
+    QJsonArray getDndModels(QString name) {
         QJsonArray data;
-        getDndModel(rootItem, data);
+        for (Model* lib : rootItem->subItems) {
+            if (name == lib->name) {
+                getDndModel(lib, data);
+                break;
+            }
+        }
         return data;
     }
 
@@ -301,6 +306,7 @@ public:
 
     QStringList getLibs() {
         QStringList libs;
+        qDebug() << rootItem->subItems.size();
         for (Model* lib : rootItem->subItems) {
             libs.append(lib->name);
         }

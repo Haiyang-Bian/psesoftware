@@ -15,6 +15,8 @@ Rectangle {
     property int nodeId: 0
     property int edgeId: 0
 
+    signal close()
+
     Action {
         id: browseAction
         icon.source: "qrc:/icons/Icons/CodiconBrowser.svg"
@@ -64,6 +66,15 @@ Rectangle {
         icon.source: "qrc:/icons/Icons/CodiconRefresh.svg"
         onTriggered: {
             Controler.useLocalLibs(sysWindow.pname)
+        }
+    }
+
+    Action {
+        id: close
+        icon.source: "qrc:/icons/Icons/CodiconChromeClose.svg"
+        
+        onTriggered: {
+            prosessWindow.close()
         }
     }
 
@@ -136,6 +147,7 @@ Rectangle {
                     }
                 }
             }
+
             ToolButton { 
                 action: setAction 
                 ToolTip {
@@ -150,6 +162,7 @@ Rectangle {
                     }
                 }
             }
+
             ToolButton { 
                 action: checkCharts 
 
@@ -165,10 +178,25 @@ Rectangle {
                     }
                 }
             }
+
+            ToolButton { 
+                action: close
+
+                ToolTip {
+                    text: "关闭"
+                    visible: parent.hovered
+                    background: Rectangle {
+                        border {
+                            color: "black"
+                            width: 1
+                        }
+                        radius: 5
+                    }
+                }
+            }
         }
     }
 
-    // 应用程序的其他内容...
     property var id: 0
     property var eid: 0
 
@@ -227,12 +255,13 @@ Rectangle {
                top: sidebar.top
                bottom: sidebar.bottom
             }
-            width: sidebar.isStored ? sidebar.width - 20 : 0
+            width: !sidebar.isStored ? sidebar.width - 20 : 0
 
             treeModel: Controler.linkLibrary()
         }
     }
 
+    property var sysDnd: Controler.getDnd(sysWindow.pname, sysWindow.sysname)
 
     DropComponent {
         id: mainDrop
@@ -243,7 +272,7 @@ Rectangle {
             left: sidebar.right
         }
 
-        dndControler: Controler.getDnd(sysWindow.pname, sysWindow.sysname)
+        dndControler: sysDnd
     }
 
 // 功能区------------------------------------------------------------------------------------------

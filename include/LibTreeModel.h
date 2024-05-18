@@ -86,11 +86,30 @@ public:
         for (auto m : models) {
             QJsonObject model = m.toObject();
             QStringList name = model.value("Type").toString().split("_");
-            name.pop_back();
+            name.pop_front();
             LibModel* mp = rootItem;
             while (!name.isEmpty())
             {
                 QString typeName = name.takeFirst();
+                if (name.isEmpty()) {
+                    LibModel* s = mp->isSon("ModelView");
+                    if (s == nullptr) {
+                        beginInsertRows(createIndex(mp->row, 0, mp), mp->subItems.size(), mp->subItems.size());
+                        LibModel* n = new LibModel{};
+                        n->name = "ModelView";
+                        n->parentItem = mp;
+                        n->row = mp->subItems.size();
+                        mp->subItems.append(n);
+                        n->models.append(model);
+                        endInsertRows();
+                        break;
+                    }
+                    else
+                    {
+                        s->models.append(model);
+                        break;
+                    }
+                }
                 LibModel* s = mp->isSon(typeName);
                 if (s == nullptr) {
                     beginInsertRows(createIndex(mp->row, 0, mp), mp->subItems.size(), mp->subItems.size());
@@ -100,20 +119,13 @@ public:
                     n->row = mp->subItems.size();
                     mp->subItems.append(n);
                     endInsertRows();
-                    if (name.isEmpty()) {                       
-                        break;
-                    }
-                    else
-                    {
-                        mp = n;
-                    }
+                    mp = n;
                 }
                 else
                 {
                     mp = s;
                 }
             }
-            mp->models.append(model);
         }
     }
 
@@ -149,11 +161,30 @@ public:
         for (auto m : models) {
             QJsonObject model = m.toObject();
             QStringList name = model.value("Type").toString().split("_");
-            name.pop_back();
+            name.pop_front();
             LibModel* mp = local;
             while (!name.isEmpty())
             {
                 QString typeName = name.takeFirst();
+                if (name.isEmpty()) {
+                    LibModel* s = mp->isSon("ModelView");
+                    if (s == nullptr) {
+                        beginInsertRows(createIndex(mp->row, 0, mp), mp->subItems.size(), mp->subItems.size());
+                        LibModel* n = new LibModel{};
+                        n->name = "ModelView";
+                        n->parentItem = mp;
+                        n->row = mp->subItems.size();
+                        mp->subItems.append(n);
+                        n->models.append(model);
+                        endInsertRows();
+                        break;
+                    }
+                    else
+                    {
+                        s->models.append(model);
+                        break;
+                    }
+                }
                 LibModel* s = mp->isSon(typeName);
                 if (s == nullptr) {
                     beginInsertRows(createIndex(mp->row, 0, mp), mp->subItems.size(), mp->subItems.size());
@@ -163,21 +194,13 @@ public:
                     n->row = mp->subItems.size();
                     mp->subItems.append(n);
                     endInsertRows();
-                    if (name.isEmpty()) {
-
-                        break;
-                    }
-                    else
-                    {
-                        mp = n;
-                    }
+                    mp = n;
                 }
                 else
                 {
                     mp = s;
                 }
             }
-            mp->models.append(model);
         }
     }
 
@@ -203,6 +226,18 @@ public:
 
     void clear() {
         deleteNodes(rootItem);
+    }
+
+    void printTree(LibModel* tree) {
+        for (LibModel* son : tree->subItems) {
+            son->parentItem = nullptr;
+            printTree(son);
+        }
+        qDebug() << tree->name;
+    }
+
+    Q_INVOKABLE void print() {
+        printTree(rootItem);
     }
 
 private:

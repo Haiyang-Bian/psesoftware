@@ -120,8 +120,10 @@ void DndControler::createNode(QJsonObject obj) {
 	);
 	node.width = obj.value(QLatin1String("Width")).toInt();
 	node.height = obj.value(QLatin1String("Height")).toInt();
-	for (auto handle : obj.value(QLatin1String("Handlers")).toArray()) {
-		QJsonObject h = handle.toObject();
+	QJsonObject hs = obj.value(QLatin1String("Handlers")).toObject();
+	QJsonObject::iterator it;
+	for (it = hs.begin(); it != hs.end(); ++it) {
+		QJsonObject h = it->toObject();
 		node.handlers.insert(h.value(QLatin1String("Name")).toString(), h);
 	}
 	getNode.insert(name, node);
@@ -133,8 +135,8 @@ void DndControler::setNode(QString name, QJsonObject obj) {
 
 void DndControler::removeNode(QString name) {
 	getNode.remove(name);
-	QMap<int, DndEdge>::iterator it;
-	QList<int> delEdges;
+	QMap<QString, DndEdge>::iterator it;
+	QList<QString> delEdges;
 	for (it = getEdge.begin(); it != getEdge.end(); it++) {
 		if (it->source == name) {
 			delEdges << it.key();
@@ -145,7 +147,7 @@ void DndControler::removeNode(QString name) {
 			getNode[it->source].handlers[it->sourceHandler].isConnected = false;
 		}
 	}
-	for (int i : delEdges) {
+	for (QString i : delEdges) {
 		getEdge.remove(i);
 	}
 	emit rmNode();
@@ -172,7 +174,7 @@ void DndControler::moveNodeEnd(QString name, int x, int y) {
 	DndNode& node = getNode[name];
 	node.x = x;
 	node.y = y;
-	QMap<int, DndEdge>::iterator it;
+	QMap<QString, DndEdge>::iterator it;
 	for (it = getEdge.begin(); it != getEdge.end(); ++it) {
 		if (it->source == name || it->target == name) {
 			it->path = generatePath(it->source, it->sourceHandler, it->target, it->targetHandler);
@@ -182,18 +184,14 @@ void DndControler::moveNodeEnd(QString name, int x, int y) {
 }
 
 void DndControler::creatEdge(QJsonObject obj) {
-	int id = obj.value(QLatin1String("Id")).toInt();
+	QString id = obj.value("Id").toString();
 	DndEdge edge;
-	edge.source = obj.value(QLatin1String("Source")).toString();
-	edge.sourceHandler = obj.value(QLatin1String("SourceHandler")).toString();
-	edge.target = obj.value(QLatin1String("Target")).toString();
-	edge.targetHandler = obj.value(QLatin1String("TargetHandler")).toString();
+	edge.source = obj.value("Source").toString();
+	edge.sourceHandler = obj.value("SourceHandler").toString();
+	edge.target = obj.value("Target").toString();
+	edge.targetHandler = obj.value("TargetHandler").toString();
 	edge.path = generatePath(edge.source, edge.sourceHandler, edge.target, edge.targetHandler);
 	getEdge.insert(id, edge);
-}
-
-void DndControler::removeEdge(int id) {
-	getEdge.remove(id);
 }
 
 QVariantList DndControler::getPosition(QString s, QString sh) {
@@ -212,7 +210,7 @@ QJsonArray DndEdge::getEdge() {
 
 QJsonArray DndControler::getEdges() {
 	QJsonArray paths;
-	QMap<int, DndEdge>::iterator it;
+	QMap<QString, DndEdge>::iterator it;
 	for (it = getEdge.begin(); it != getEdge.end(); it++)
 		paths.append(it->getEdge());
 	return paths;
@@ -232,7 +230,7 @@ QList<Point> DndControler::generatePath(QString s, QString sh, QString t, QStrin
 	path.prepend(getNode.value(t).absolutePosition(th));
 	path.append(a.realStart);
 	int p = 1;
-	while (p != path.size()) {
+	while (p + 1 < path.size()) {
 		if (isParallel(path.at(p-1), path.at(p + 1))) {
 			path.removeAt(p);
 		}
@@ -256,11 +254,37 @@ void DndControler::resizeNode(QString name, int x, int y, int width, int height)
 	node.y = y;
 	node.width = width;
 	node.height = height;
-	QMap<int, DndEdge>::iterator it;
+	QMap<QString, DndEdge>::iterator it;
 	for (it = getEdge.begin(); it != getEdge.end(); ++it) {
 		if (it->source == name || it->target == name) {
 			it->path = generatePath(it->source, it->sourceHandler, it->target, it->targetHandler);
 		}
 	}
 	emit moveEnd();
+}
+
+QJsonArray DndControler::getNodes()
+{
+	QJsonArray nodes;
+	QMap<QString, DndNode>::const_iterator it;
+	for (it = getNode.begin(); it != getNode.end(); ++it) {
+		QJsonArray hs;
+		QMap<QString, Handle>::const_iterator h;
+		for (h = it->handlers.begin(); h != it->handlers.end(); ++h) {
+			QJsonObject hh = h->handleToJson();
+			hh.insert("Name", h.key());
+			hs << hh;
+		}
+		QJsonObject node{
+			{ "Name", it.key()},
+			{ "X", it->x },
+			{ "Y", it->y },
+			{ "Width", it->width },
+			{ "Height", it->height },
+			{ "Type", it->type },
+			{ "Handlers", hs }
+		};
+		nodes.append(node);
+	}
+	return nodes;
 }

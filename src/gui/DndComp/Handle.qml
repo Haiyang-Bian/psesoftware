@@ -14,7 +14,7 @@ DropArea {
         let s = drop.source.parent.parent.parent.setname
         let sh = drop.source.parent.parent.hname
         dnd.creatEdge({
-            "Id": prosessWindow.edgeId,
+            "Id": s + "_" + sh + "_" + parent.setname + "_" + hname,
             "Source": s,
             "Target": parent.setname,
             "SourceHandler": sh,

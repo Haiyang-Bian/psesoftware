@@ -2,7 +2,6 @@
 import QtQuick.Controls
 import Ai4Energy 1.0
 
-// 无法联动的BUG由keys引起,很遗憾不知为何即便keys相同也无法放置,姑且先放弃吧...
 Rectangle {
     id: dragItem
 
@@ -24,9 +23,9 @@ Rectangle {
     property string setname: ""
     property bool isDropped: false
     property bool isPort: false
-    property var hdata: undefined
+    property var hdata: []
     property string compType: ""
-    property var paras: undefined
+    property var paras: []
     property var type: "Component"
     property bool lock: false
 
@@ -53,7 +52,7 @@ Rectangle {
     }
 
     Repeater {
-        model: handlerList
+        model: hdata
         delegate: handlerDelegate
     }
 
@@ -107,7 +106,7 @@ Rectangle {
         width: 240
         height: parent.height
         edge: Qt.RightEdge
-        interactive: true // 启用鼠标互动
+        interactive: true
 
         Rectangle {
             id: die
@@ -130,34 +129,6 @@ Rectangle {
         }
     }
 // 功能区---------------------------------------------------------------------------------  
-
-    ListModel {
-        id: handlerList
-    }
-
-    Component.onCompleted: {
-        if (hdata !== undefined){
-            if (hdata instanceof ListModel)
-                for (let i = 0; i < hdata.count; ++i) {
-                    var h = hdata.get(i)
-                    handlerList.append({
-                        "Name": h.Name,
-                        "Type": h.Position,
-                        "Offset": h.Offset
-                    })
-                }
-            else {
-                for (let i = 0; i < hdata.length; ++i) {
-                    var h = hdata[i]
-                    handlerList.append({
-                        "Name": h.Name,
-                        "Type": h.Position,
-                        "Offset": h.Offset
-                    })
-                }
-            }
-        }
-    }
 
     Menu {
         id: contextMenu
@@ -186,40 +157,40 @@ Rectangle {
 
         Handle {
             dnd: dragItem.dnd
-            hname: Name
+            hname: modelData.Name
             visible: isDropped
 
             Component.onCompleted: {
-                let t = 0
+                let t = Number(modelData.Position)
                 if (isPort){
-                    t = (Type + 2) % 4
-                }else {
-                    t = Type
+                    t += 2
+                    if (t > 4)
+                        t -= 4
                 }
                 switch(t) {
                 case 1:
                     anchors.bottom = dragItem.top
                     anchors.bottomMargin = -height / 2
                     anchors.left = dragItem.left
-                    anchors.leftMargin = Offset - width / 2
+                    anchors.leftMargin = modelData.Offset - width / 2
                     break
                 case 2:
                     anchors.left = dragItem.right
                     anchors.leftMargin = -width / 2
                     anchors.top = dragItem.top
-                    anchors.topMargin = Offset - height / 2
+                    anchors.topMargin = modelData.Offset - height / 2
                     break
                 case 3:
                     anchors.bottom = dragItem.bottom
                     anchors.bottomMargin = -height / 2
                     anchors.left = dragItem.left
-                    anchors.leftMargin = Offset - width / 2
+                    anchors.leftMargin = modelData.Offset - width / 2
                     break
                 case 4:
                     anchors.right = dragItem.left
                     anchors.rightMargin = -width / 2
                     anchors.top = dragItem.top
-                    anchors.topMargin = Offset - height / 2
+                    anchors.topMargin = modelData.Offset - height / 2
                     break
                 }
             }

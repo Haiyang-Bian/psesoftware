@@ -36,6 +36,11 @@ void Controler::loadProject(QUrl path) {
     np.varTypes.setVariable(p.value("DataTypes").toArray());
     np.connTypes.loadTypes(p.value("ConnectionTypes").toArray());
     np.models.loadModels(p.value("ModelList").toArray());
+    QJsonObject sys = p.value("Systems").toObject();
+    QJsonObject::iterator it;
+    for (it = sys.begin(); it != sys.end(); ++it) {
+        np.system.insert(it.key(), it->toObject());
+    }
     projects.insert(name, np);
 }
 

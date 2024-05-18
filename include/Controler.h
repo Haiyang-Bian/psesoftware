@@ -76,7 +76,7 @@ public:
 	Q_INVOKABLE void useLocalLibs(QString name) {
 		QStringList libs = projects[name].models.getLibs();
 		for (QString lib : libs)
-			compList.useLocalModels(projects[name].models.getDndModels(), lib);
+			compList.useLocalModels(projects[name].models.getDndModels(lib), lib);
 	}
 
 	// 数据库交互

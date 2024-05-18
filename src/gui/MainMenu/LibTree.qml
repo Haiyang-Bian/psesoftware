@@ -5,7 +5,6 @@ import Ai4Energy 1.0
 Rectangle {
     id: libTree
     visible: true
-
     
     property var treeModel: undefined
 
@@ -20,15 +19,26 @@ Rectangle {
         model: treeModel
 
 
-        delegate: Item {
+        delegate: treee
+    }
+
+    Component {
+        id: treee
+
+        Rectangle {
             id: layer
-            implicitWidth: parent.width
-            implicitHeight: Math.ceil(models.length / 2) * 100 + 50
+
+            implicitWidth: treeView.width
+            implicitHeight: type ? Math.ceil(libModels.length / 2) * 100 : 50
+
+            border {
+                color: "black"
+                width: 1
+            }
 
             readonly property real indentation: 20
             readonly property real padding: 5
 
-            // Assigned to by TreeView:
             required property TreeView treeView
             required property bool isTreeNode
             required property bool expanded
@@ -38,8 +48,6 @@ Rectangle {
             required property int column
             required property bool current
 
-            // Rotate indicator when expanded by the user
-            // (requires TreeView to have a selectionModel)
             property Animation indicatorAnimation: NumberAnimation {
                 target: indicator
                 property: "rotation"
@@ -76,14 +84,23 @@ Rectangle {
 
             Label {
                 id: label
-                x: padding + (isTreeNode ? (depth + 1) * indentation : 0)
-                anchors.verticalCenter: parent.verticalCenter
-                width: parent.width - padding - x
+                anchors {
+                    top: layer.top
+                    left: layer.left
+                    right: !type ? layer.right : layer.left
+                }
+                height: !type ? 50 : 0
+
                 clip: true
                 text: name
 
                 TapHandler {
                     onDoubleTapped: {
+                        let index = treeView.index(row, column)
+                        treeView.selectionModel.setCurrentIndex(index, ItemSelectionModel.NoUpdate)
+                        treeView.toggleExpanded(row)
+                    }
+                    onSingleTapped: {
                         let index = treeView.index(row, column)
                         treeView.selectionModel.setCurrentIndex(index, ItemSelectionModel.NoUpdate)
                         treeView.toggleExpanded(row)
@@ -94,27 +111,35 @@ Rectangle {
             GridView {
                 id: modelsView
                 visible: type
-                width: type ? parent.width : 0
+                anchors {
+                    top: label.bottom
+                    left: layer.left
+                    right: layer.right
+                    bottom: layer.bottom
+                }
 
                 cellWidth: 80 
                 cellHeight: 80 
 
                 clip: true
-                z: 1
+                z: 100
                 
-                model: models
+                model: libModels
                 
                 delegate: Loader {
-                    width: 80;
-                    height: layer.expanded ? 80 : 0
-
+                    visible: true
+                    width: 80
+                    height: 80
+                    active: true
+                
                     source: "qrc:/dndkit/DndComp/DragComponent.qml"
-
+                
                     onLoaded: {
-                        item.paras = Paras
-                        item.compType = Type
-                        item.image = Icon
-                        item.hdata = Handlers
+                        item.paras = modelData.Paras
+                        item.compType = modelData.Type
+                        item.image = modelData.Icon
+                        item.hdata = modelData.Handlers
+                        item.dnd = prosessWindow.sysDnd
                     }
                 }
             }

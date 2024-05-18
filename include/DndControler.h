@@ -64,8 +64,16 @@ struct Handle
 	bool isConnected = false;
 	Handle() {}
 	Handle(const QJsonObject& h) {
-		this->type = h.value(QLatin1String("Type")).toInt();
-		this->offset = h.value(QLatin1String("Offset")).toInt();
+		auto p = h.value("Position");
+		if (p.isString())
+			this->type = p.toString().toInt();
+		else
+			this->type = p.toInt();
+		auto o = h.value("Offset");
+		if (o.isString())
+			this->offset = o.toString().toInt();
+		else
+			this->offset = o.toInt();
 		if (h.contains(QLatin1String("IsConnected")))
 			this->isConnected = h.value(QLatin1String("IsConnected")).toBool();
 		if (h.contains(QLatin1String("Width")))
@@ -76,7 +84,7 @@ struct Handle
 
 	QJsonObject handleToJson() const {
 		return QJsonObject{
-			{"Type", type},
+			{"Position", type},
 			{"Offset", offset},
 			{"Width", width},
 			{"Height", height},
@@ -300,7 +308,8 @@ public:
 		QJsonArray&& edges = dnd.value("ConnectionList").toArray();
 		QJsonArray::const_iterator it;
 		for (it = edges.begin(); it != edges.end(); ++it) {
-			getEdge.insert(it - edges.begin(), it->toObject());
+			QJsonObject e = it->toObject();
+			getEdge.insert(e.value("Name").toString(), e);
 		}
 	}
 
@@ -322,10 +331,13 @@ public:
 	Q_INVOKABLE void moveNodeEnd(QString name, int x, int y);
 	Q_INVOKABLE QVariantList getPosition(QString s, QString sh);
 	Q_INVOKABLE void resizeNode(QString name, int x, int y, int width, int height);
+	Q_INVOKABLE QJsonArray getNodes();
 
 	// 对连接线的编辑
 	Q_INVOKABLE void creatEdge(QJsonObject obj);
-	Q_INVOKABLE void removeEdge(int id);
+	Q_INVOKABLE void removeEdge(QString id) {
+		getEdge.remove(id);
+	}
 	Q_INVOKABLE QJsonArray getEdges();
 	// 解算路径
 	QList<Point> generatePath(QString s, QString sh, QString t, QString th);
@@ -341,9 +353,11 @@ public:
 			nodes.insert(node.key(), node->nodeToJson());
 		}
 		QJsonArray edges;
-		QMap<int, DndEdge>::const_iterator edge;
+		QMap<QString, DndEdge>::const_iterator edge;
 		for (edge = getEdge.begin(); edge != getEdge.end(); ++edge) {
-			edges.append(edge->edgeToJson());
+			QJsonObject e = edge->edgeToJson();
+			e.insert("Name", edge.key());
+			edges.append(e);
 		}
 		return QJsonObject{
 			{"ComponentList", nodes},
@@ -357,7 +371,7 @@ signals:
 
 private:
 	QMap<QString, DndNode> getNode;
-	QMap<int, DndEdge> getEdge;
+	QMap<QString, DndEdge> getEdge;
 public:
 	QJsonObject sysInfo;
 };

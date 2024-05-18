@@ -71,7 +71,7 @@ Rectangle {
                         MenuItem {
                             text: "新建";
                             onTriggered: {
-                                loader1.source = "/system/System/SystemInput.qml"
+                                loader1.source = "qrc:/system/System/SystemInput.qml"
                                 loader1.active = true
                             }
                         }
@@ -114,7 +114,10 @@ Rectangle {
                 source: ""
                 active: false
                 onLoaded: {
-                    
+                    item.close.connect(()=>{
+                        editorLoader.source = ""
+                        editorLoader.active = false
+                    })
                 }
             }
         }
@@ -156,11 +159,11 @@ Rectangle {
                     if (button === Qt.RightButton)
                         contextMenu.popup(eventPoint.position)
                 }
-                onDoubleTapped: button => {
+                onDoubleTapped: (eventPoint, button) => {
                     if (button === Qt.LeftButton) {
                         sysWindow.modelId = index
                         sysname = name
-                        editorLoader.source = "/system/System/System.qml"
+                        editorLoader.source = "qrc:/system/System/System.qml"
                         editorLoader.active = true
                     }
                 }

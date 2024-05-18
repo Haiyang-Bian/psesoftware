@@ -15,7 +15,7 @@ DropArea {
     Connections {
         target: dndControler
         function onMoveEnd() {
-            bufferLine = []
+            dragArea.bufferLine = []
             bufferCanvas.requestPaint()
             lineCanvas.requestPaint()
         }
@@ -41,27 +41,19 @@ DropArea {
                     "dragType": Drag.Internal,
                     "isDropped": true,
                     "hdata": drop.source.hdata,
+                    "compType": drop.source.compType,
                     "image": drop.source.image,
                     "paras": drop.source.paras,
                     "width": drop.source.width,
                     "height": drop.source.height
                 }
             )
-            var jsonArray = [];
-            for (var i = 0; i < drop.source.hdata.count; ++i) {
-                var h = drop.source. hdata.get(i)
-                jsonArray.push({
-                    "Name": h.Name,
-                    "Type": h.Position,
-                    "Offset": h.Offset
-                })
-            }
             dndControler.createNode({
                 "Name": "node_" + prosessWindow.nodeId,
                 "X": x,
                 "Y": y,
                 "Type": drop.source.compType,
-                "Handlers": jsonArray,
+                "Handlers": drop.source.hdata,
                 "Width": drop.source.width,
                 "Height": drop.source.height
             })
@@ -174,6 +166,30 @@ DropArea {
         MenuItem { text: "选项3"; onTriggered: { /* 处理选项3 */ } }
     }
 
+    Component.onCompleted: {
+        let comps = dndControler.getNodes()
+        for (let c of comps) {
+             let comp = Qt.createComponent("DragComponent.qml")
+             let obj = comp.createObject(dragArea,
+                 {
+                     "dnd": dndControler,
+                     "setname": c.Name,
+                     "x": c.X,
+                     "y": c.Y,
+                     "supportedActions": Qt.MoveAction,
+                     "dragType": Drag.Internal,
+                     "isDropped": true,
+                     "hdata": c.Handlers,
+                     "compType": c.Type,
+                     "image": "",
+                     "paras": [],
+                     "width": c.Width,
+                     "height": c.Height
+                 }
+             )
+        }
+    }
+
     function connectPaint(ctx){
         if (dragArea.line.start !== undefined) {
             ctx.beginPath();
@@ -226,7 +242,7 @@ DropArea {
             for (let j = 0; j < columns; j++) {
                 let x = j * space;
                 let y = i * space;
-                ctx.fillText("*", x, y); // 使用fillText绘制星号
+                ctx.fillText("*", x, y)
             }
         }
         ctx.fillStyle = "black";

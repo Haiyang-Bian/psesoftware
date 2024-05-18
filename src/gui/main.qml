@@ -11,7 +11,7 @@ ApplicationWindow {
     width: 1400
     height: 750
     visible: true
-    title: "gAPHD ModelEditor 0.4.0"
+    title: "gAPHD ModelEditor 0.5.0"
     visibility: "Maximized"
 
     menuBar: Menus { id: menu }
@@ -337,6 +337,7 @@ ApplicationWindow {
                         {
                             "width": workSpace.width,
                             "height": workSpace.height,
+                            "pname": name
                         }
                     )
                     headers.append({

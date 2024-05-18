@@ -9,6 +9,7 @@
 #include "../include/ConnectionType.h"
 #include "../include/Model.h"
 #include "../include/TreeModel.h"
+#include "../include/LibTreeModel.h"
 #include "../include/DndTree.h"
 #include "../include/Controler.h"
 #include "../include/DndControler.h"
@@ -38,6 +39,7 @@ int main(int argc, char *argv[])
     controler.connectDataBase();
 
     qmlRegisterType<MyTreeModel>("Ai4Energy", 1, 0, "TreeModel");
+    qmlRegisterType<LibTreeModel>("Ai4Energy", 1, 0, "LibTreeModel");
     qmlRegisterType<VariableType>("Ai4Energy", 1, 0, "VarModel");
     qmlRegisterType<ConnectionType>("Ai4Energy", 1, 0, "ConnModel");
     qmlRegisterType<ModelList>("Ai4Energy", 1, 0, "ModelList");

@@ -54,7 +54,6 @@ QVariant  LibTreeModel::data(const QModelIndex& index, int role) const
     }
     LibModel* item = getItem(index);
     if (role == Qt::DisplayRole) {
-        //TreeView继承自TableView，所以可以通过不同的column来取单元格数据
         role = Qt::UserRole + index.column();
     }
     switch (role) {
@@ -76,7 +75,7 @@ QHash<int, QByteArray> LibTreeModel::roleNames() const
     names.insert(QHash<int, QByteArray>{
         { NameRole, "name" },
         { TypeRole, "type" },
-        { ModelsRole, "models" }
+        { ModelsRole, "libModels" }
     });
     return names;
 }
