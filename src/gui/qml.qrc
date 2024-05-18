@@ -37,6 +37,7 @@
         <file>DndComp/Handle.qml</file>
         <file>DndComp/Node.qml</file>
         <file>DndComp/Resizer.qml</file>
+        <file>DndComp/DataEditor.qml</file>
     </qresource>
     <qresource prefix="/system">
         <file>System/InitAndSet.qml</file>

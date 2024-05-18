@@ -11,6 +11,7 @@ DropArea {
     property bool isSubSystem: false
     property int space: 20
     property var dndControler: undefined
+    property var libModels: undefined
 
     Connections {
         target: dndControler
@@ -31,6 +32,9 @@ DropArea {
             let y = drop.y - drop.source.height / 2
             y -= y % space
             var comp = Qt.createComponent("DragComponent.qml")
+            if (comp.status !== Component.Ready){
+                console.debug(comp.errorString())
+            }
             var obj = comp.createObject(dragArea,
                 {
                     "dnd": dndControler,
@@ -45,7 +49,8 @@ DropArea {
                     "image": drop.source.image,
                     "paras": drop.source.paras,
                     "width": drop.source.width,
-                    "height": drop.source.height
+                    "height": drop.source.height,
+                    "isCustom": drop.source.isCustom
                 }
             )
             dndControler.createNode({
@@ -55,7 +60,8 @@ DropArea {
                 "Type": drop.source.compType,
                 "Handlers": drop.source.hdata,
                 "Width": drop.source.width,
-                "Height": drop.source.height
+                "Height": drop.source.height,
+                "isCustom": drop.source.isCustom
             })
             prosessWindow.nodeId += 1
         }
@@ -137,14 +143,14 @@ DropArea {
         onSingleTapped: (eventPoint, button) => {
             if (button === Qt.RightButton) {
                 let id = dndControler.getEdgeId(eventPoint.position.x, eventPoint.position.y)
-                if (id !== -1){
+                if (id !== ""){
                     contextMenu.edgeId = id
                     contextMenu.popup(eventPoint.position);
                 }
             } else {
-                if (dndControler.selectedEdge(eventPoint.position.x, eventPoint.position.y)) {
-                    lineCanvas.requestPaint()
-                }
+                //if (dndControler.selectedEdge(eventPoint.position.x, eventPoint.position.y)) {
+                //    lineCanvas.requestPaint()
+                //}
             }
         }
     }
@@ -152,24 +158,28 @@ DropArea {
     Menu {
         id: contextMenu
 
-        property int edgeId: -1
+        property string edgeId: ""
 
         MenuItem { 
             text: "删除"; 
             onTriggered: { 
-                //dndControler.removeEdge(contextMenu.edgeId)
+                dndControler.removeEdge(contextMenu.edgeId)
                 lineCanvas.requestPaint()
             } 
         }
 
-        MenuItem { text: "选项2"; onTriggered: { /* 处理选项2 */ } }
-        MenuItem { text: "选项3"; onTriggered: { /* 处理选项3 */ } }
+        MenuItem { text: "编辑标签"; onTriggered: { /* 处理选项2 */ } }
+        MenuItem { text: "改变颜色"; onTriggered: { /* 处理选项3 */ } }
     }
 
     Component.onCompleted: {
         let comps = dndControler.getNodes()
         for (let c of comps) {
+             let icon = libModels.getIcon(c.Type, c.isCustom)
              let comp = Qt.createComponent("DragComponent.qml")
+             if (comp.status !== Component.Ready){
+                 console.debug(comp.errorString())
+             }
              let obj = comp.createObject(dragArea,
                  {
                      "dnd": dndControler,
@@ -181,10 +191,11 @@ DropArea {
                      "isDropped": true,
                      "hdata": c.Handlers,
                      "compType": c.Type,
-                     "image": "",
-                     "paras": [],
+                     "image": icon,
+                     "paras": c.Paras,
                      "width": c.Width,
-                     "height": c.Height
+                     "height": c.Height,
+                     "isCustom": c.isCustom
                  }
              )
         }

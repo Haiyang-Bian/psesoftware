@@ -28,6 +28,7 @@ Rectangle {
     property var paras: []
     property var type: "Component"
     property bool lock: false
+    property bool isCustom: false
 
     color: "yellow"
 
@@ -112,8 +113,12 @@ Rectangle {
             id: die
             anchors.fill: parent
 
-            Component.onCompleted: {
-                parasEdit()
+            DataEditor {
+                name: dragItem.setname
+                paraList: dragItem.paras
+                onEditData: data => {
+                    dnd.setNode(dragItem.setname, data)
+                }
             }
         }
     }
@@ -193,92 +198,6 @@ Rectangle {
                     anchors.topMargin = modelData.Offset - height / 2
                     break
                 }
-            }
-        }
-    }
-
-    function parasEdit() {
-        if (dragItem.paras !== undefined) {
-            var s = "
-                import QtQuick
-                import QtQuick.Controls
-
-                Rectangle {
-                    anchors.fill: parent
-
-                    Column {
-                        Text {
-                            text: \"" + dragItem.setname + "\"
-                        }
-            "           
-            for (let i = 0; i < dragItem.paras.count; ++i) {
-                let v = dragItem.paras.get(i)
-                if (v.Gui === "text") {
-                    s += "
-                        Row {
-                            spacing: 10
-
-                            Text {
-                                width: 50
-                                height: 50
-
-                                text: \"" + v.Name + ": \"
-                            }
-
-                            TextField {
-                                height: 50
-
-                                id: " + v.Name.toLowerCase() + "
-                            }
-                        }
-
-                    "
-                } else if (v.Gui === "checkBox") {
-                    s += "
-                        Row {
-                            spacing: 10
-
-                            Text {
-                                width: 50
-                                height: 50
-
-                                text: \"" + v.Name + ": \"
-                            }
-
-                            CheckBox {
-                                id: " + v.Name.toLowerCase() + "
-                                width: 50
-                                height: 50
-                            }
-                        }
-
-                    "
-                }
-                s += "
-                    Button {
-                        width: 70
-                        height: 50
-
-                        text: \"确认\"
-
-                        onClicked: {
-                            Controler.getDnd(sysWindow.pname, sysWindow.sysname).setNode(dragItem.setname,{
-                "
-                for (let i = 0; i < dragItem.paras.count; ++i) {
-                    let v = dragItem.paras.get(i)
-                    if (v.Gui === "text") {
-                        s += "\"" + v.Name + "\"" + ": " + v.Name.toLowerCase() + ".text,"
-                    } else if (v.Gui === "checkBox") {
-                        s += "\"" + v.Name + "\"" + ": " + v.Name.toLowerCase() + ".checked,"
-                    }
-                }
-                s += "          })
-                            }
-                        }
-                    }
-                }"
-                
-                Qt.createQmlObject(s, die)
             }
         }
     }

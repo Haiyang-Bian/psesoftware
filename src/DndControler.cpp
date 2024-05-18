@@ -275,6 +275,13 @@ QJsonArray DndControler::getNodes()
 			hh.insert("Name", h.key());
 			hs << hh;
 		}
+		QJsonObject::const_iterator p;
+		QJsonArray ps;
+		for (p = it->data.begin(); p != it->data.end(); ++p) {
+			QJsonObject pp = p->toObject();
+			pp.insert("Name", p.key());
+			ps.append(pp);
+		}
 		QJsonObject node{
 			{ "Name", it.key()},
 			{ "X", it->x },
@@ -282,7 +289,9 @@ QJsonArray DndControler::getNodes()
 			{ "Width", it->width },
 			{ "Height", it->height },
 			{ "Type", it->type },
-			{ "Handlers", hs }
+			{ "Handlers", hs },
+			{ "isCustom", it->isCustom },
+			{ "Paras", ps }
 		};
 		nodes.append(node);
 	}

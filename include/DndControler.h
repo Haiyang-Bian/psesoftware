@@ -109,6 +109,7 @@ public:
 		height = node.value("Height").toInt();
 		type = node.value("Type").toString();
 		data = node.value("Data").toObject();
+		isCustom = node.value("isCustom").toBool();
 		QJsonObject&& hs = node.value("Handles").toObject();
 		for (QString h : hs.keys()) {
 			handlers.insert(h, hs[h].toObject());
@@ -165,7 +166,8 @@ public:
 			{"Width",width},
 			{"Height",height},
 			{"Type",type},
-			{"Data",data}
+			{"Data",data},
+			{"isCustom",isCustom}
 		};
 		QJsonObject hs;
 		QMap<QString, Handle>::const_iterator it;
@@ -181,6 +183,7 @@ public:
 	int y = 0;
 	int width = 80;
 	int height = 80;
+	bool isCustom = false;
 	QString type;
 	QJsonObject data;
 	QMap<QString, Handle> handlers;
@@ -335,6 +338,25 @@ public:
 
 	// 对连接线的编辑
 	Q_INVOKABLE void creatEdge(QJsonObject obj);
+	Q_INVOKABLE QString getEdgeId(int x, int y) {
+		QMap<QString, DndEdge>::const_iterator it;
+		for (it = getEdge.begin(); it != getEdge.end(); ++it) {
+			for (int i = 0; i + 1 < it->path.size(); ++i) {
+				const Point& p1 = it->path.at(i), & p2 = it->path.at(i + 1);
+				if (p1.x == p2.x) {
+					if (min(p1.y, p2.y) < y && y < max(p1.y, p2.y) && abs(x - p1.x) < 3)
+						return it.key();
+				}
+				else if (p1.y == p2.y)
+				{
+					if (min(p1.x, p2.x) < x && x < max(p1.x, p2.x) && abs(y - p1.y) < 3)
+						return it.key();
+				}
+			}
+		}
+		return "";
+	}
+
 	Q_INVOKABLE void removeEdge(QString id) {
 		getEdge.remove(id);
 	}

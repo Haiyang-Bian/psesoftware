@@ -272,6 +272,7 @@ Rectangle {
             left: sidebar.right
         }
 
+        libModels: Controler.linkLibrary()
         dndControler: sysDnd
     }
 

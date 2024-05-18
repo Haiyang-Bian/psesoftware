@@ -140,6 +140,7 @@ Rectangle {
                         item.image = modelData.Icon
                         item.hdata = modelData.Handlers
                         item.dnd = prosessWindow.sysDnd
+                        item.isCustom = modelData.isCustom
                     }
                 }
             }

@@ -160,6 +160,7 @@ public:
         endInsertRows();
         for (auto m : models) {
             QJsonObject model = m.toObject();
+            model.insert("isCustom", true);
             QStringList name = model.value("Type").toString().split("_");
             name.pop_front();
             LibModel* mp = local;
@@ -238,6 +239,41 @@ public:
 
     Q_INVOKABLE void print() {
         printTree(rootItem);
+    }
+
+    Q_INVOKABLE QString getIcon(QString name, bool isCustom) {
+        if (rootItem == nullptr)
+            return "";
+        QStringList names = name.split("_");
+        QString lib = names.takeFirst();
+        if (isCustom) {
+            lib = "LocalModels-" + lib;
+        }
+        LibModel* m = rootItem->isSon(lib);
+        if (m == nullptr)
+            return "";
+        while (!names.isEmpty())
+        {
+            QString n = names.takeFirst();
+            if (names.isEmpty()) {
+                m = m->isSon("ModelView");
+                if (m == nullptr)
+                    return "";
+                for (auto mm : m->models) {
+                    QJsonObject mmm = mm.toObject();
+                    if (mmm.value("Type").toString() == name) {
+                        return mmm.value("Icon").toString();
+                    }
+                }
+            }
+            else
+            {
+                m = m->isSon(n);
+                if (m == nullptr)
+                    return "";
+            }
+        }
+        return "";
     }
 
 private:

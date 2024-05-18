@@ -198,20 +198,28 @@ public:
             QJsonObject p = model->data.value("Parameters").toObject();
             for (it = p.begin(); it != p.end(); ++it) {
                 QJsonObject pp = it->toObject();
-                if (!pp.value("Value").isString()) {
+                QString v = pp.value("Value").toString();
+                bool ok;
+                v.toDouble(&ok);
+                if (ok) {
                     paras.append(QJsonObject{
                         {"Name", it.key()},
-                        {"Gui", pp.value("Gui").toString()}
+                        {"Gui", pp.value("Gui")},
+                        {"Value", v.toDouble()}
                         });
                 }
             }
             QJsonObject sp = model->data.value("StructuralParameters").toObject();
             for (it = sp.begin(); it != sp.end(); ++it) {
                 QJsonObject pp = it->toObject();
-                if (!pp.value("Value").isString()) {
+                QString v = pp.value("Value").toString();
+                bool ok;
+                v.toDouble(&ok);
+                if (ok) {
                     sparas.append(QJsonObject{
                         {"Name", it.key()},
-                        {"Gui", pp.value("Gui").toString()}
+                        {"Gui", pp.value("Gui")},
+                        {"Value", v.toDouble()}
                         });
                 }
             }
