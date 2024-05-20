@@ -122,10 +122,25 @@ void Controler::generateSimulation(QString name, QString process) {
     query.addQueryItem("type", "analysis_system");
     url.setQuery(query);
     QNetworkRequest request(url);
-    QJsonObject json = projects.value(name).system.value(process).systemData();
-    QNetworkReply* reply = netWorker.post(request, QJsonDocument(json).toJson().constData());
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "Content-Type: application/json");
+    QJsonObject project;
+    QJsonArray vars = projects[name].varTypes.saveTypes();
+    QJsonArray::iterator it;
+    //for (it = vars)
+    project.insert("DataTypes", vars);
+
+    QJsonArray cons = projects[name].connTypes.getTypes();
+    project.insert("ConnectionTypes", cons);
+
+    QJsonArray models = projects[name].models.saveModels();
+    project.insert("ModelList", models);
+
+    project.insert("System", projects.value(name).system.value(process).systemData());
+
+    QNetworkReply* reply = netWorker.post(request, QJsonDocument(project).toJson().constData());
     connect(&netWorker, &QNetworkAccessManager::finished, this, [this](QNetworkReply* r) {
         QJsonObject res = QJsonDocument::fromJson(r->readAll()).object();
+        qDebug() << res;
         emit this->analysisEnd(res);
         });
 }

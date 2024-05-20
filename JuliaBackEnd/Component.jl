@@ -33,7 +33,7 @@ end
 function Component(input::Dict)
     type = Symbol(get(input, "Type", nothing))
     ports = parse_ports(get(input, "Ports", nothing))
-    medias = get(input, "Medias", nothing)
+    medias = get(input, "Medias", Dict())
     vars = parse_vars(get(input, "Variables", nothing))
     paras = parse_paras(get(input, "Parameters", nothing))
     sparas = parse_sparas(get(input, "StructrualParameters", nothing))

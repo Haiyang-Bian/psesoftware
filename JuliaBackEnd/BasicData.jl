@@ -18,6 +18,11 @@ mutable struct Data <: AbstractData
     metadata::Any
 end
 
+function Data(data::Dict)
+    value = get(data, "Value", 0)
+
+end
+
 function Data()
     return Data(
         :NoUnits,
@@ -56,7 +61,7 @@ function parse_vars(input::Dict)
         isnothing(value) && (value = type["DefaultValue"])
         data.value = Meta.parse(value)
         bounds = get(v, "Bounds", nothing)
-        isnothing(bounds) && (bounds = eval(Meta.parse(type["Bounds"])))
+        isnothing(bounds) && (bounds = type["Bounds"])
         data.bound = bounds
         is_incremental = get(v, "Incremental", false)
         data.incremental = is_incremental
@@ -69,7 +74,7 @@ function parse_vars(input::Dict)
             data.unit = uparse(type["DefaultUnit"])
         else
             data.unit = uparse(unit)
-            data.k = (1.0 * unit |> uparse(type["DefaultUnit"])).val
+            data.k = (uparse("1.0" * unit) |> uparse(type["DefaultUnit"])).val
         end
         data.connect_type = Symbol(get(v, "ConnectType", :Equal))
         push!(vars, Symbol(k) => data)
@@ -134,7 +139,7 @@ function parse_paras(input::Dict)
             data.unit = uparse(type["DefaultUnit"])
         else
             data.unit = uparse(unit)
-            data.k = (1.0 * unit |> uparse(type["DefaultUnit"])).val
+            data.k = (uparse("1.0" * unit) |> uparse(type["DefaultUnit"])).val
         end
         push!(paras, Symbol(k) => data)
     end

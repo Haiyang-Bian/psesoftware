@@ -86,6 +86,7 @@ public:
 
 	// 生成仿真文件
 	Q_INVOKABLE void generateSimulation(QString name, QString process);
+
 	// 返回系统信息
 	Q_INVOKABLE inline QJsonObject systemInfo(QString name, QString process) {
 		return projects[name].system[process].sysInfo;

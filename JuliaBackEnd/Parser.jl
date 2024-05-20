@@ -3,11 +3,14 @@
 mutable struct System <: AbstractComponent
     name::String
     comps::Dict
-    nodes::Dict
+    nodes::Vector
 end
 
 function System(input::Dict)
-    name = get(input, "Name", "System" * now())
+    time = string(now())[1:end-4]
+    time = replace(time, ":" => "_")
+    time = replace(time, "-" => "_")
+    name = get(input, "Name", "System" * time)
     comps = get(input, "ComponentList", nothing)
     isnothing(comps) || isempty(comps) && error("\033[1;31m错误\033[0m:一个系统至少有一个组件!请检查!")
     nodes = get(input, "ConnectionList", nothing)
@@ -63,7 +66,7 @@ function compile_data(data::Component{true})
         else
             define *= "@variables $k(t)=$(v.value) $(parse_metadata(v))\n"
         end
-        define *= "$k = setmetadata($k, Ai4EnergyMetaData, $v)"
+        define *= "$k = setmetadata($k, Ai4EnergyMetaData, \"$v\")\n"
         sys *= "$k;"
     end
     push!(back, :variables => ProcessedData("", define, sys))
@@ -104,6 +107,7 @@ function compiler(comp::Component{false}, create=true)
     ports = ""
     for (k, v) in comp.ports
         ports *= "$k;"
+        v.number = Meta.parse(v.number)
         if v.number isa Number && v.number > 1
             write(io, "@named $k[1:$(v.number)] = $(v.type)()\n")
         elseif v.number isa Number && v.number == 1
@@ -127,7 +131,7 @@ function compiler(comp::Component{false}, create=true)
     write(io, "$(data[:constants].define)\n$(data[:parameters].define)\n$(data[:variables].define)")
     write(io, "eqs = Equation[\n$(comp.conn)]\n")
     write(io, comp.eqs)
-    write(io, "compose(ODESystem(eqs, t, [$(data[:variables].sys)], [$(data[:parameters].sys)]; name=name), [$ports; $sons])")
+    write(io, "return compose(ODESystem(eqs, t, [$(data[:variables].sys)], [$(data[:parameters].sys)]; name=name), [$ports; $sons])\n")
     write(io, "\nend")
     close(io)
     if create
@@ -145,12 +149,13 @@ function compile_custom_port(ports::Vector)
     io = IOBuffer()
     for port in ports
         write(io, "@connector $(port["Type"]) begin\n")
-        for (pk, pv) in port["Variables"]
-            write(io, "$pk(t)=$(pv["DefaultValue"]), $(parse_metadata(pv))\n")
+        vars = parse_vars(port["Variables"])
+        for (pk, pv) in vars
+            write(io, "$pk(t)=$(pv.value), $(parse_metadata(pv))\n")
             write(
                 io,
                 """begin
-                	$pk = setmetadata($pk, Ai4EnergyMetaData, $pv)
+                	$pk = setmetadata($pk, Ai4EnergyMetaData, \"$pv\")
                 end\n
                 """
             )
@@ -158,7 +163,7 @@ function compile_custom_port(ports::Vector)
         write(io, "end\n")
         seekstart(io)
         code = read(io, String)
-        push!(custom_port_types, Symbol(port["Type"]) => code)
+        push!(custom_port_types[], Symbol(port["Type"]) => code)
         truncate(io, 0)
         seekstart(io)
     end
@@ -174,24 +179,25 @@ end
 function compiler(comp::Component{true}, create=true)
     io = open("./$(comp.type).jl", "w")
     data = compile_data(comp)
-    medias = parse_media(comp.medias, comp.type)
+    medias = parse_media(comp.medias, string(comp.type))
     !isnothing(medias) && generate_material(medias)
     write(io, "function $(comp.type)(;name, $(data[:parameters].args) $(data[:structural_parameters].args))\n")
     ports = ""
     for (k, v) in comp.ports
         ports *= "$k;"
-        if v.number isa Number && v.number > 1
+        n = Meta.parse(v.number)
+        if n isa Number && n > 1
             write(io, "@named $k[1:$(v.number)] = $(v.type)()\n")
-        elseif v.number isa Number && v.number == 1
+        elseif n isa Number && n == 1
             write(io, "@named $k = $(v.type)()\n")
-        elseif v.number isa Symbol
+        elseif n isa Symbol
             write(io, "@named $k[1:$(v.number)] = $(v.type)()\n")
         end
     end
-    write(io, "$(data[:constants].define)\n$(data[:parameters].define)\n$(data[:variables].define)")
+    write(io, "$(data[:constants].define)\n$(data[:parameters].define)\n$(data[:variables].define)\n")
     write(io, "eqs = Equation[]\n")
     write(io, comp.eqs)
-    write(io, "compose(ODESystem(eqs, t, [$(data[:variables].sys)], [$(data[:parameters].sys)]; name=name), [$ports])")
+    write(io, "return compose(ODESystem(eqs, t, [$(data[:variables].sys)], [$(data[:parameters].sys)]; name=name), [$ports])\n")
     write(io, "end")
     close(io)
     if create
@@ -207,8 +213,14 @@ end
 
 function init_data(input::Dict)
     args = ""
+    if isempty(input)
+        return ""
+    end
     for (k, v) in input
-        args *= "$k=$(v["Value"]),"
+        if k == "Null"
+            continue
+        end
+        args *= "$k=$v,"
     end
     println(args)
     return args
@@ -264,16 +276,16 @@ function compiler(sys::System)
     sub_system = ""
     for (k, v) in sys.comps
         sub_system *= k * ";"
-        if haskey(ready_components[], v["Type"])
-            write(io, "@named $k = ready_components[][$(v["Type"])]($(init_data(v["Init"])))\n")
+        if haskey(ready_components[], v["Type"] isa String ? Symbol(v["Type"]) : v["Type"])
+            write(io, "@named $k = ready_components[][:$(v["Type"])]($(init_data(v["Data"])))\n")
         else
             lib, name = split(v["Type"], "_", limit=2)
-            model = get_model(name, lib)
+            model = get_model(string(name), string(lib))
             eval(model["PrecompiledModel"])
             write(io, "@named $k = $(v["Type"])($(init_data(v["Init"])))\n")
         end
     end
-    write(io, "eqs = Equation[$(parse_conn(sys.nodes))]\n")
+    write(io, "eqs = Equation[$(connect_nodes(sys.nodes))]\n")
     write(io, "return compose(ODESystem(eqs, t, [], []; name=name), [$sub_system])\nend\n\n")
     write(io, "@named sys = $(sys.name)()\nglobal system = sys\n")
     close(io)
@@ -359,9 +371,10 @@ end
 # 分析函数
 function analysis_system(input::Dict)
     global custom_data_types[] = input["DataTypes"]
-    global custom_port_types[] = compile_custom_port(input["ConnectionTypes"])
+    compile_custom_port(input["ConnectionTypes"])
     open("./PortType.jl", "w") do io
         compile_port(port_types[], io)
+        compile_port(custom_port_types[], io)
     end
     include("./PortType.jl")
     global custom_models[] = input["ModelList"]

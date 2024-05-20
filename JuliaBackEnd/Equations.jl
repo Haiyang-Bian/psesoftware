@@ -3,13 +3,19 @@ function parse_eqs(::Nothing)
     error("\033[1;31m错误\033[0m:组件必须含有方程!请检查!")
 end
 
+function parse_eqs(eqs::String)
+    e = split(eqs, "\n")
+    return parse_eqs(e)
+end
+
 function parse_eqs(input::Vector)
     eqs = ""
     head = r"^\s*(?:for|if) .+"
     stop = r"^\s*end\s*"
     stack = []
+    block = ""
     for line in input
-        line[1] = '#' && continue
+        (line[1] == '#') && continue
         if occursin(head, line)
             push!(stack, 1)
             block *= line * "\n"
@@ -105,13 +111,11 @@ end
 
 # 生成连接方程(逻辑有所改动,现在一个节点就是两个端口)
 function connect_nodes(nodes::Vector)
-    expr1 = Meta.parse(nodes[1])
-    expr2 = Meta.parse(nodes[2])
-    if expr1.head == :ref
-        expr1 = "$(expr1.args[1])_$(expr1.args[2])"
+    n = ""
+    for line in nodes
+        node1 = line["Source"] * '.' * line["SourceHandler"]
+        node2 = line["Target"] * '.' * line["TargetHandler"]
+        n *= "connect($node1, $node2)\n"
     end
-    if expr2.head == :ref
-        expr2 = "$(expr2.args[1])_$(expr2.args[2])"
-    end
-    return "connect($expr1, $expr2)\n"
+    return n
 end

@@ -38,7 +38,7 @@ function get_datatype(name::String)
             "Name" => row[1],
             "DefaultUnit" => row[2],
             "DefaultValue" => row[3],
-            "Bounds" => (row[4], row[5]),
+            "Bounds" => (eval(Meta.parse(row[4])), eval(Meta.parse(row[5]))),
             "Description" => row[6]
         )
     end
@@ -196,8 +196,11 @@ function create_model(type::String, lib_name::String, model::Dict, code::String)
 end
 
 function get_data(type::Symbol, meta_type::Symbol)
+    name = string(type)
     if meta_type == :DataType
-        tag, name = split(string(type), "_", limit=2)
+        #tag, name = split(string(type), "_", limit=2)
+        #TODO:这里有点问题
+        return get_datatype(name)
         if tag == "Standard"
             return get_datatype(name)
         else
@@ -208,7 +211,9 @@ function get_data(type::Symbol, meta_type::Symbol)
             end
         end
     elseif meta_type == :Port
-        tag, name = split(string(type), "_", limit=2)
+        #tag, name = split(string(type), "_", limit=2)
+        #TODO:这里有点问题
+        return custom_port_types[][type]
         if tag == "Standard"
             return get_port_type(name)
         else
