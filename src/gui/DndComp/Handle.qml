@@ -20,7 +20,6 @@ DropArea {
             "SourceHandler": sh,
             "TargetHandler": hname
         })
-        prosessWindow.edgeId += 1
         lineCanvas.requestPaint()
         bufferCanvas.requestPaint()
         drop.acceptProposedAction();

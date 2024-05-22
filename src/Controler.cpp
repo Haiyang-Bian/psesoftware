@@ -117,6 +117,7 @@ void Controler::selectLibs(QVariantList libs) {
 }
 
 void Controler::generateSimulation(QString name, QString process) {
+    netWorker.clearConnectionCache();
     QUrl url("http://localhost:8080/simulation");
     QUrlQuery query;
     query.addQueryItem("type", "analysis_system");
@@ -138,23 +139,31 @@ void Controler::generateSimulation(QString name, QString process) {
     project.insert("System", projects.value(name).system.value(process).systemData());
 
     QNetworkReply* reply = netWorker.post(request, QJsonDocument(project).toJson().constData());
-    connect(&netWorker, &QNetworkAccessManager::finished, this, [this](QNetworkReply* r) {
+    connect(&netWorker, &QNetworkAccessManager::finished, this, [this, name, process](QNetworkReply* r) {
         QJsonObject res = QJsonDocument::fromJson(r->readAll()).object();
-        qDebug() << res;
-        emit this->analysisEnd(res);
+        this->projects[name].system[process].sysInfo = res;
+        emit this->analysisEnd();
+        r->deleteLater();
         });
 }
 
 void Controler::simulation(QJsonObject settings)
 {
+    qDebug() << "卧槽!";
+    QNetworkAccessManager cao;
     QUrl url("http://localhost:8080/simulation");
     QUrlQuery query;
     query.addQueryItem("type", "calculation");
     url.setQuery(query);
     QNetworkRequest request(url);
-    QNetworkReply* reply = netWorker.post(request, QJsonDocument(settings).toJson().constData());
-    connect(&netWorker, &QNetworkAccessManager::finished, this, [this](QNetworkReply* r) {
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "Content-Type: application/json");
+    QNetworkReply* reply = cao.post(request, QJsonDocument(settings).toJson().constData());
+    qDebug() << reply->error();
+    connect(&cao, &QNetworkAccessManager::finished, this, [this](QNetworkReply* r) {
+        qDebug() << r->readAll();
         QJsonObject res = QJsonDocument::fromJson(r->readAll()).object();
+        qDebug() << res;
         emit simulationEnd(res);
+        r->deleteLater();
         });
 }

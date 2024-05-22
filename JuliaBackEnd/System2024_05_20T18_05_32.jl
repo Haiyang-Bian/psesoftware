@@ -1,5 +1,0 @@
-function System2024_05_20T18_05_32(;name)
-@named node_4 = ready_components[][ElectricalStandardLibrary_Ground]()
-@named node_1 = ready_components[][ElectricalStandardLibrary_Resistor](R=20000,)
-@named node_3 = ready_components[][ElectricalStandardLibrary_IdealVoltageSource](E=25,)
-@named node_2 = ready_components[][ElectricalStandardLibrary_Capacitor](C=200,)

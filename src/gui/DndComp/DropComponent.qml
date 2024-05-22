@@ -38,7 +38,7 @@ DropArea {
             var obj = comp.createObject(dragArea,
                 {
                     "dnd": dndControler,
-                    "setname": "node_" + prosessWindow.nodeId,
+                    "setname": "node_" + dndControler.dndCount(),
                     "x": x,
                     "y": y,
                     "supportedActions": Qt.MoveAction,
@@ -54,7 +54,7 @@ DropArea {
                 }
             )
             dndControler.createNode({
-                "Name": "node_" + prosessWindow.nodeId,
+                "Name": "node_" + dndControler.dndCount(),
                 "X": x,
                 "Y": y,
                 "Type": drop.source.compType,
@@ -63,7 +63,6 @@ DropArea {
                 "Height": drop.source.height,
                 "isCustom": drop.source.isCustom
             })
-            prosessWindow.nodeId += 1
         }
         drop.acceptProposedAction();
         drop.accepted = true;

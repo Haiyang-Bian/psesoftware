@@ -17,6 +17,14 @@ Rectangle {
 
     signal close()
 
+    Connections {
+        target: Controler
+        function onAnalysisEnd() {
+            initAndSet.source = "qrc:/system/System/InitAndSet.qml"
+            initAndSet.active = true
+        }
+    }
+
     Action {
         id: browseAction
         icon.source: "qrc:/icons/Icons/CodiconBrowser.svg"
@@ -31,8 +39,6 @@ Rectangle {
         icon.source: "qrc:/icons/Icons/CodiconDebugAlt.svg"
         onTriggered: {
             Controler.generateSimulation(sysWindow.pname, sysWindow.sysname)
-            initAndSet.source = "/system/System/InitAndSet.qml"
-            initAndSet.active = true
         }
     }
 
@@ -258,6 +264,7 @@ Rectangle {
             width: !sidebar.isStored ? sidebar.width - 20 : 0
 
             treeModel: Controler.linkLibrary()
+            dnd: prosessWindow.sysDnd
         }
     }
 

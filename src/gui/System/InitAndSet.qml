@@ -32,11 +32,10 @@ Window {
         TabButton {
             id: t2
             text: "仿真参数设置"
-            // 当点击时，切换到对应的页面
+            
             width: 200
 
             background: Rectangle {
-                // 设置背景色和边框
                 color: "transparent" // 背景色
                 border.color: "black"
             }
@@ -71,7 +70,6 @@ Window {
             margins: 2
         }
 
-        // 初值输入区
         Rectangle {
             id: init
             Layout.fillWidth: true
@@ -81,7 +79,7 @@ Window {
             ColumnLayout {
                 anchors.fill: parent
                 spacing: 10
-                    // 输入框的标签和数量由模型决定
+                    
                 Rectangle {
                     Layout.topMargin: 60
                     Layout.fillHeight: true
@@ -166,7 +164,7 @@ Window {
                         }
 
                         RowLayout {
-                            // 求解器选择
+                            
                             Layout.fillWidth: true
                             Layout.preferredHeight: 50
 
@@ -177,9 +175,7 @@ Window {
                             }
 
                             ComboBox {
-                                // Combox内容由模型决定
-                                // 示例:
-                                model: ["Tsit5", "求解器2", "求解器3"]
+                                model: ["Tsit5"]
                             }
                         }
                     }
@@ -248,6 +244,7 @@ Window {
                         for (let i = 0; i < inits.count; ++i) {
                             initVals[inits.get(i).VarName] = inits.get(i).Value
                         }
+                        console.log("不是,哥们?")
                         Controler.simulation({
                             "InitialConditions": initVals,
                             "TimeSpan": [l.text, u.text],
@@ -285,9 +282,10 @@ Window {
     Connections{
         target: Controler
 
-        function onSimulationEnd(result){
-            var keys = Object.keys(result);
-            for (var line of keys) {
+        function onSimulationEnd(ans){
+            let keys = Object.keys(ans);
+            console.log(keys)
+            for (let line of keys) {
                 if (line !== "t") {
                     let series = results.createSeries(ChartView.SeriesTypeLine, line);
                     series.axisX = xZhou

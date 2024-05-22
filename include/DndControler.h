@@ -387,6 +387,10 @@ public:
 		};
 	}
 
+	Q_INVOKABLE int dndCount() {
+		return getNode.size();
+	}
+
 signals:
 	void moveEnd();
 	void rmNode();

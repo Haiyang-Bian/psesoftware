@@ -110,9 +110,11 @@ Rectangle {
                top: sidebar.top
                bottom: sidebar.bottom
             }
-            width: sidebar.isStored ? sidebar.width - 20 : 0
+            width: !sidebar.isStored ? sidebar.width - 20 : 0
 
             treeModel: Controler.linkLibrary()
+
+            dnd: modelWindow.models.editSubSystem(modelBuilder.model)
         }
     }
 
@@ -133,7 +135,7 @@ Rectangle {
         id: update
         icon.source: "qrc:/icons/Icons/CodiconRefresh.svg"
         onTriggered: {
-           
+            Controler.useLocalLibs(modelBuilder.pname)
         }
     }
 

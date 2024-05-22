@@ -95,7 +95,7 @@ public:
 	Q_INVOKABLE void simulation(QJsonObject settings);
 
 signals:
-	void analysisEnd(QJsonObject res);
+	void analysisEnd();
 	// 仿真结束后告诉UI进行绘图
 	void simulationEnd(QJsonObject ans);
 

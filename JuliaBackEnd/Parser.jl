@@ -295,9 +295,13 @@ end
 设置返回值字典.
 """
 function generate_back(sim_args::Dict)
+    println(sim_args)
     initial_conditions = get(sim_args, "InitialConditions", nothing)
-    settings = get(sim_args, "Settings", nothing)
-    name = "Simulation$(now()).jl"
+    ts = get(sim_args, "TimeSpan", nothing)
+    time = string(now())[1:end-4]
+    time = replace(time, "-" => "_")
+    time = replace(time, ":" => "_")
+    name = "Simulation$time.jl"
     open(name, "w") do io
         init = ""
         if isnothing(initial_conditions)
@@ -307,15 +311,15 @@ function generate_back(sim_args::Dict)
             init = "[$(join(u0, ","))]"
         end
         tspan = ""
-        if isnothing(settings["TimeSpan"])
+        if isnothing(ts)
             tspan = "(0.0, 1.0)"
         else
-            tspan = "$(settings["TimeSpan"][1]):$(settings["TimeSpan"][2])"
+            tspan = "($(ts[1]),$(ts[2]))"
         end
-        write(io, "prob = ODESystem(current_system[], $init, $tspan)\n")
-        solver = get(settings, "Solver", "Tsit5")
-        write(io, "sol = solve(prob, $solver())")
-        back_info = get(settings, "BackInfo", nothing)
+        write(io, "prob = ODEProblem(current_system[], $init, $tspan)\n")
+        solver = get(sim_args, "Solver", "Tsit5")
+        write(io, "sol = solve(prob, $solver())\n")
+        back_info = get(sim_args, "BackValues", nothing)
         # 初始化返回字典
         write(io, "back_results = Dict()\n")
         # 写入返回信息
@@ -347,15 +351,16 @@ function delete_projact(name::String)
 end
 
 function simulation(name::String)
-    try
-        result = include("./$name")
-        #delete_projact(name)
-        println(result)
-        return result
-    catch e
-        println(e)
-        return e
-    end
+    #try
+    result = include("./$name")
+    #delete_projact(name)
+    JSON3.write(result)
+    println(result)
+    return Dict("Error" => "为他吗啥呀?")
+    #catch e
+    #println(e)
+    #return e
+    #end
 end
 
 function simulation(args::Dict)

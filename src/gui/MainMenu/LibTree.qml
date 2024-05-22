@@ -7,6 +7,7 @@ Rectangle {
     visible: true
     
     property var treeModel: undefined
+    property var dnd: undefined
 
     TreeView {
         id: treeView
@@ -139,7 +140,7 @@ Rectangle {
                         item.compType = modelData.Type
                         item.image = modelData.Icon
                         item.hdata = modelData.Handlers
-                        item.dnd = prosessWindow.sysDnd
+                        item.dnd = dnd
                         item.isCustom = modelData.isCustom
                     }
                 }

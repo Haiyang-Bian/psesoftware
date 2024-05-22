@@ -11,7 +11,7 @@ ApplicationWindow {
     width: 1400
     height: 750
     visible: true
-    title: "gAPHD ModelEditor 0.5.0"
+    title: "gAPHD ModelEditor 0.6.0"
     visibility: "Maximized"
 
     menuBar: Menus { id: menu }
